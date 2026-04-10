@@ -1,0 +1,77 @@
+# BidZen Frontend — Windsurf AI Rules
+
+## Stack
+- React.js with Vite
+- Tailwind CSS with shadcn/ui
+- Axios for all HTTP requests
+- react-hook-form + zod for all forms
+- Zustand for global state
+- date-fns for date formatting
+- react-hot-toast for notifications
+- react-router-dom for routing
+
+## Component Rules
+- ALWAYS use shadcn/ui components from src/components/ui/ for: Button, Card, Input,
+  Badge, Dialog, Select, Label, Textarea, Avatar, Skeleton, Separator
+- Import shadcn components: import { Button } from "@/components/ui/button"
+- NEVER create custom button, input, or card components from scratch
+- NEVER use <a> for internal navigation — always use react-router-dom <Link>
+- NEVER use HTML <form> — always use react-hook-form's <form> via handleSubmit
+
+## Styling Rules
+- NEVER hardcode colors — use Tailwind semantic classes: bg-primary, text-foreground,
+  text-muted-foreground, bg-muted, border-border, bg-destructive, text-accent
+- NEVER use arbitrary Tailwind values like bg-[#4F46E5] or text-[14px]
+- NEVER write inline style={{ color: '#...' }} for theme colors
+- All color customization goes in src/styles/globals.css CSS variables ONLY
+- Use Tailwind spacing scale: p-4, gap-6, mt-8 — never px values in className
+- Border radius: always use rounded-lg, rounded-md, rounded-sm from config
+
+## API Rules
+- ALL API calls go through src/api/ files — never call axios directly in components
+- Use the axiosInstance from src/api/axiosInstance.js for all requests
+- Token is attached by the Axios request interceptor — never manually add Authorization header
+- Handle loading, error, and empty states in every component that fetches data
+
+## Auction Status Rules
+- Compute "closing_soon" client-side: active auction with < 3600 seconds remaining
+- Use AuctionStatusBadge component for ALL status displays — never render status text raw
+- Use CountdownTimer component for ALL time-remaining displays
+
+## State Rules
+- Auth state (user, token, role) lives ONLY in src/store/authStore.js
+- Read auth state with useAuth() hook — never read from Zustand directly in components
+- Auction list state lives in src/store/auctionStore.js
+- Component-local state (modal open, form values) uses useState
+
+## Form Rules
+- ALL forms use react-hook-form with zod resolver
+- ALL form schemas defined in the same file as the form component
+- Show inline error messages below each field using react-hook-form's formState.errors
+- Disable submit button while isSubmitting is true
+
+## Polling Rules
+- Auction details page polls bid data every 15 seconds while auction is active
+- Auction list page polls every 30 seconds
+- Use usePolling custom hook from src/hooks/usePolling.js — never use raw setInterval
+- Stop polling when auction status is 'closed' or component unmounts
+
+## Currency Rules
+- ALL prices displayed with formatCurrency() from src/utils/formatCurrency.js
+- Display in BDT: ৳15,000 format
+- Never display raw numbers for prices
+
+## Naming Rules
+- Page components: PascalCase ending in "Page" — e.g. AuctionDetailsPage
+- Feature components: PascalCase describing function — e.g. BidForm, CountdownTimer
+- Hooks: camelCase starting with "use" — e.g. useCountdown
+- API files: camelCase ending in ".api.js" — e.g. auction.api.js
+- Store files: camelCase ending in "Store.js" — e.g. authStore.js
+
+## Do Not Rules
+- Do NOT build WebSockets, real-time push, or Socket.io — use polling
+- Do NOT build payment UI of any kind
+- Do NOT create image upload UI in MVP
+- Do NOT use Redux, MobX, or Context API for global state — use Zustand
+- Do NOT use any CSS framework other than Tailwind + shadcn
+- Do NOT add any package not already in package.json without a reason
