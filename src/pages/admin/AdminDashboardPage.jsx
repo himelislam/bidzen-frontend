@@ -16,6 +16,11 @@ export default function AdminDashboardPage() {
   const [resolveDialog, setResolveDialog] = useState({ open: false, auctionId: null });
   const [isResolving, setIsResolving] = useState(false);
 
+  // Set page title
+  useEffect(() => {
+    document.title = "Admin Dashboard - BidZen";
+  }, []);
+
   useEffect(() => {
     const fetchSystemData = async () => {
       try {

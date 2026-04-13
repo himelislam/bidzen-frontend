@@ -12,17 +12,30 @@ import PriceDisplay from "@/components/shared/PriceDisplay";
 import { useAuth } from "@/hooks/useAuth";
 import { usePolling } from "@/hooks/usePolling";
 import { POLLING_INTERVAL_DETAIL } from "@/utils/constants";
+import { setMetaTags, clearMetaTags } from "@/utils/seo";
 
 export default function AuctionDetailsPage() {
-  // Set page title
-  useEffect(() => {
-    document.title = "Auction Details - BidZen";
-  }, []);
   const { id } = useParams();
   const { user, isBuyer } = useAuth();
   const [auction, setAuction] = useState(null);
   const [bids, setBids] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Set SEO meta tags when auction loads
+  useEffect(() => {
+    if (auction) {
+      const title = `${auction.title} - BidZen Auction`;
+      const description = auction.description
+        ? auction.description.substring(0, 160) + (auction.description.length > 160 ? '...' : '')
+        : `Join the bidding for ${auction.title} on BidZen. Current bid: ${auction.currentHighestBid || auction.startingPrice}.`;
+
+      setMetaTags(title, description);
+    }
+
+    return () => {
+      clearMetaTags();
+    };
+  }, [auction]);
   const [error, setError] = useState(null);
 
   const fetchAuctionDetails = async () => {

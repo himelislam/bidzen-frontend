@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { placeBid } from "@/api/bid.api";
 import PriceDisplay from "@/components/shared/PriceDisplay";
+import { formatCurrency } from "@/utils/formatCurrency";
 import toast from "react-hot-toast";
 
 const bidSchema = z.object({
@@ -22,9 +23,9 @@ const bidSchema = z.object({
 
 export default function BidForm({ auction, onBidSuccess }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const minBid = (auction.currentHighestBid || auction.startingPrice) + 1;
-  
+
   const {
     register,
     handleSubmit,
@@ -67,7 +68,7 @@ export default function BidForm({ auction, onBidSuccess }) {
               type="number"
               min={minBid}
               step="1"
-              placeholder={`Minimum bid: ৳${minBid}`}
+              placeholder={`Minimum bid: ${formatCurrency(minBid)}`}
               {...register("amount", { valueAsNumber: true })}
               className="text-lg"
             />

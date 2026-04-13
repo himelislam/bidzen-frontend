@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { login } from "@/api/auth.api";
 import toast from "react-hot-toast";
+import { useEffect } from "react";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -14,7 +15,12 @@ const loginSchema = z.object({
 export default function LoginPage() {
   const { setAuth } = useAuth();
   const navigate = useNavigate();
-  
+
+  // Set page title
+  useEffect(() => {
+    document.title = "Login - BidZen";
+  }, []);
+
   const {
     register,
     handleSubmit,
@@ -53,7 +59,7 @@ export default function LoginPage() {
             </Link>
           </p>
         </div>
-        
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-foreground">

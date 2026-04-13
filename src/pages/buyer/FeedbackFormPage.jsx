@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -24,6 +24,11 @@ export default function FeedbackFormPage() {
   const [auction, setAuction] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Set page title
+  useEffect(() => {
+    document.title = "Leave Feedback - BidZen";
+  }, []);
 
   const {
     register,

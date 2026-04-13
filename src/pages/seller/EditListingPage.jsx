@@ -39,6 +39,11 @@ export default function EditListingPage() {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Set page title
+  useEffect(() => {
+    document.title = "Edit Auction - BidZen";
+  }, []);
+
   const {
     register,
     handleSubmit,

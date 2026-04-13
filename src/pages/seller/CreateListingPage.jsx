@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -34,6 +34,11 @@ const categories = [
 export default function CreateListingPage() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Set page title
+  useEffect(() => {
+    document.title = "Create Auction - BidZen";
+  }, []);
 
   const {
     register,

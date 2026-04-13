@@ -16,6 +16,11 @@ export default function SellerDashboardPage() {
   const [deleteDialog, setDeleteDialog] = useState({ open: false, auctionId: null });
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Set page title
+  useEffect(() => {
+    document.title = "Seller Dashboard - BidZen";
+  }, []);
+
   useEffect(() => {
     const fetchSellerAuctions = async () => {
       try {

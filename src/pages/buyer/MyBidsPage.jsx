@@ -13,6 +13,11 @@ export default function MyBidsPage() {
   const [userBids, setUserBids] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Set page title
+  useEffect(() => {
+    document.title = "My Bids - BidZen";
+  }, []);
+
   useEffect(() => {
     const fetchUserBids = async () => {
       try {

@@ -1,7 +1,13 @@
+import { useEffect } from "react";
 import PageWrapper from "@/components/layout/PageWrapper";
 import { Link } from "react-router-dom";
 
 export default function NotFoundPage() {
+  // Set page title
+  useEffect(() => {
+    document.title = "Page Not Found - BidZen";
+  }, []);
+
   return (
     <PageWrapper>
       <div className="text-center">

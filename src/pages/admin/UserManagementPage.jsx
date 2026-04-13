@@ -57,6 +57,11 @@ export default function UserManagementPage() {
   const [deactivateDialog, setDeactivateDialog] = useState({ open: false, userId: null });
   const [isDeactivating, setIsDeactivating] = useState(false);
 
+  // Set page title
+  useEffect(() => {
+    document.title = "User Management - BidZen";
+  }, []);
+
   useEffect(() => {
     // Simulate API call to fetch users
     setTimeout(() => {
