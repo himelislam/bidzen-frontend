@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import EmptyState from "@/components/shared/EmptyState";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
+import toast from "react-hot-toast";
 
 // Mock user data for demo
 const mockUsers = [
@@ -52,6 +54,8 @@ export default function UserManagementPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [deactivateDialog, setDeactivateDialog] = useState({ open: false, userId: null });
+  const [isDeactivating, setIsDeactivating] = useState(false);
 
   useEffect(() => {
     // Simulate API call to fetch users
@@ -70,11 +74,24 @@ export default function UserManagementPage() {
     return matchesSearch && matchesRole && matchesStatus;
   });
 
-  const handleSuspendUser = (userId) => {
-    // This would normally call an API to suspend user
-    setUsers(users.map(user =>
-      user._id === userId ? { ...user, status: 'suspended' } : user
-    ));
+  const handleDeactivateUser = async (userId) => {
+    try {
+      setIsDeactivating(true);
+
+      // This would normally call an API to deactivate user
+      // For now, we'll simulate success
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      setUsers(users.map(user =>
+        user._id === userId ? { ...user, status: 'suspended' } : user
+      ));
+      setDeactivateDialog({ open: false, userId: null });
+      toast.success("User deactivated successfully");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to deactivate user");
+    } finally {
+      setIsDeactivating(false);
+    }
   };
 
   const handleActivateUser = (userId) => {
@@ -82,6 +99,11 @@ export default function UserManagementPage() {
     setUsers(users.map(user =>
       user._id === userId ? { ...user, status: 'active' } : user
     ));
+    toast.success("User activated successfully");
+  };
+
+  const openDeactivateDialog = (userId) => {
+    setDeactivateDialog({ open: true, userId });
   };
 
   const getRoleBadgeVariant = (role) => {
@@ -203,9 +225,9 @@ export default function UserManagementPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleSuspendUser(user._id)}
+                            onClick={() => openDeactivateDialog(user._id)}
                           >
-                            Suspend
+                            Deactivate
                           </Button>
                         ) : (
                           <Button
@@ -245,6 +267,18 @@ export default function UserManagementPage() {
           )}
         </div>
       </div>
+
+      {/* Deactivate User Confirmation Dialog */}
+      <ConfirmDialog
+        open={deactivateDialog.open}
+        onOpenChange={(open) => setDeactivateDialog({ ...deactivateDialog, open })}
+        title="Deactivate User"
+        description="Are you sure you want to deactivate this user? They will no longer be able to access the platform."
+        confirmText="Deactivate"
+        onConfirm={() => handleDeactivateUser(deactivateDialog.userId)}
+        isDestructive={true}
+        loading={isDeactivating}
+      />
     </div>
   );
 }

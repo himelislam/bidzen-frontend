@@ -7,10 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import PriceDisplay from "@/components/shared/PriceDisplay";
 import AuctionStatusBadge from "@/components/auction/AuctionStatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
+import toast from "react-hot-toast";
 
 export default function AdminDashboardPage() {
   const [auctions, setAuctions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [resolveDialog, setResolveDialog] = useState({ open: false, auctionId: null });
+  const [isResolving, setIsResolving] = useState(false);
 
   useEffect(() => {
     const fetchSystemData = async () => {
@@ -40,6 +44,30 @@ export default function AdminDashboardPage() {
   const recentAuctions = auctions
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 5);
+
+  const handleResolveFlag = async (auctionId) => {
+    try {
+      setIsResolving(true);
+
+      // This would normally call an API to resolve the flag
+      // For now, we'll simulate success
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      setAuctions(auctions.map(a =>
+        a._id === auctionId ? { ...a, status: 'active' } : a
+      ));
+      setResolveDialog({ open: false, auctionId: null });
+      toast.success("Flag resolved successfully");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to resolve flag");
+    } finally {
+      setIsResolving(false);
+    }
+  };
+
+  const openResolveDialog = (auctionId) => {
+    setResolveDialog({ open: true, auctionId });
+  };
 
   if (loading) {
     return (
@@ -161,8 +189,12 @@ export default function AdminDashboardPage() {
                           <Button asChild variant="outline" size="sm">
                             <Link to={`/auctions/${auction._id}`}>Review</Link>
                           </Button>
-                          <Button variant="destructive" size="sm">
-                            Remove
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => openResolveDialog(auction._id)}
+                          >
+                            Resolve
                           </Button>
                         </div>
                       </div>
@@ -249,6 +281,17 @@ export default function AdminDashboardPage() {
             </Button>
           </div>
         </div>
+
+        {/* Resolve Flag Confirmation Dialog */}
+        <ConfirmDialog
+          open={resolveDialog.open}
+          onOpenChange={(open) => setResolveDialog({ ...resolveDialog, open })}
+          title="Resolve Flag"
+          description="Are you sure you want to resolve this flag? This will remove the flag and restore the auction to active status."
+          confirmText="Resolve"
+          onConfirm={() => handleResolveFlag(resolveDialog.auctionId)}
+          loading={isResolving}
+        />
       </div>
     </div>
   );

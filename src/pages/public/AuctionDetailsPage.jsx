@@ -6,6 +6,8 @@ import AuctionStatusBadge from "@/components/auction/AuctionStatusBadge";
 import CountdownTimer from "@/components/auction/CountdownTimer";
 import BidHistory from "@/components/auction/BidHistory";
 import BidForm from "@/components/auction/BidForm";
+import FeedbackForm from "@/components/feedback/FeedbackForm";
+import FeedbackList from "@/components/feedback/FeedbackList";
 import PriceDisplay from "@/components/shared/PriceDisplay";
 import { useAuth } from "@/hooks/useAuth";
 import { usePolling } from "@/hooks/usePolling";
@@ -146,13 +148,29 @@ export default function AuctionDetailsPage() {
         {/* Winner Banner - When auction is closed and has winner */}
         {auction.status === 'closed' && auction.winner && (
           <div className="bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-200 dark:border-amber-800 p-6 rounded-lg text-center mb-8">
-            <div className="text-2xl mb-2">🏆</div>
+            <div className="text-2xl mb-2"></div>
             <h2 className="text-xl font-bold text-amber-800 dark:text-amber-200">
               Winner: {auction.winner.name}
             </h2>
             <p className="text-amber-700 dark:text-amber-300">
               Winning bid: <PriceDisplay amount={auction.currentHighestBid} />
             </p>
+          </div>
+        )}
+
+        {/* Feedback Section - Only when auction is closed */}
+        {auction.status === 'closed' && (
+          <div className="space-y-8">
+            {/* Feedback Form - Only for winning buyer or listing seller */}
+            {(user?.role === 'buyer' || user?.role === 'seller') && (
+              <FeedbackForm
+                auctionId={auction._id}
+                onSubmitted={fetchAuctionDetails}
+              />
+            )}
+
+            {/* Feedback List - Always show for closed auctions */}
+            <FeedbackList auctionId={auction._id} />
           </div>
         )}
       </div>

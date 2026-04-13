@@ -7,10 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import PriceDisplay from "@/components/shared/PriceDisplay";
 import AuctionStatusBadge from "@/components/auction/AuctionStatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
+import toast from "react-hot-toast";
 
 export default function SellerDashboardPage() {
   const [auctions, setAuctions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleteDialog, setDeleteDialog] = useState({ open: false, auctionId: null });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchSellerAuctions = async () => {
@@ -35,6 +39,28 @@ export default function SellerDashboardPage() {
     active: auctions.filter(a => a.status === 'active').length,
     scheduled: auctions.filter(a => a.status === 'scheduled').length,
     closed: auctions.filter(a => a.status === 'closed').length,
+  };
+
+  const handleDeleteAuction = async (auctionId) => {
+    try {
+      setIsDeleting(true);
+
+      // This would normally call an API to delete the auction
+      // For now, we'll simulate success
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      setAuctions(auctions.filter(a => a._id !== auctionId));
+      setDeleteDialog({ open: false, auctionId: null });
+      toast.success("Listing deleted successfully");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to delete listing");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const openDeleteDialog = (auctionId) => {
+    setDeleteDialog({ open: true, auctionId });
   };
 
   if (loading) {
@@ -150,9 +176,18 @@ export default function SellerDashboardPage() {
                         </div>
                       </div>
                       <div className="flex gap-2">
-                        {auction.status === 'active' && (
+                        {auction.status === 'scheduled' && (
                           <Button asChild variant="outline" size="sm">
                             <Link to={`/seller/edit/${auction._id}`}>Edit</Link>
+                          </Button>
+                        )}
+                        {auction.status === 'scheduled' && (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => openDeleteDialog(auction._id)}
+                          >
+                            Delete
                           </Button>
                         )}
                         <Button asChild variant="outline" size="sm">
@@ -167,6 +202,18 @@ export default function SellerDashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog({ ...deleteDialog, open })}
+        title="Delete Listing"
+        description="Are you sure you want to delete this auction listing? This action cannot be undone."
+        confirmText="Delete"
+        onConfirm={() => handleDeleteAuction(deleteDialog.auctionId)}
+        isDestructive={true}
+        loading={isDeleting}
+      />
     </div>
   );
 }
