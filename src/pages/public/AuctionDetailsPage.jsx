@@ -5,6 +5,7 @@ import { getBids } from "@/api/bid.api";
 import AuctionStatusBadge from "@/components/auction/AuctionStatusBadge";
 import CountdownTimer from "@/components/auction/CountdownTimer";
 import BidHistory from "@/components/auction/BidHistory";
+import BidForm from "@/components/auction/BidForm";
 import PriceDisplay from "@/components/shared/PriceDisplay";
 import { useAuth } from "@/hooks/useAuth";
 import { usePolling } from "@/hooks/usePolling";
@@ -130,19 +131,17 @@ export default function AuctionDetailsPage() {
           )}
         </div>
 
+        {/* Bid Form - Only for buyers when auction is active */}
+        {isBuyer && isActive && (
+          <div className="mb-8">
+            <BidForm auction={auction} onBidSuccess={fetchAuctionDetails} />
+          </div>
+        )}
+
         {/* Bid History */}
         <div className="mb-8">
           <BidHistory bids={bids} />
         </div>
-
-        {/* Bid Form - Only for buyers when auction is active */}
-        {isBuyer && isActive && (
-          <div className="bg-muted p-6 rounded-lg text-center">
-            <p className="text-muted-foreground">
-              <strong>Ready to bid?</strong> Use the "Place Bid" button on the auction card above to participate.
-            </p>
-          </div>
-        )}
 
         {/* Winner Banner - When auction is closed and has winner */}
         {auction.status === 'closed' && auction.winner && (

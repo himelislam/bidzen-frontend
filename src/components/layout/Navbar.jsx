@@ -23,38 +23,62 @@ export default function Navbar() {
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
               <>
-                <Link 
-                  to="/auctions" 
+                <Link
+                  to="/auctions"
                   className="text-muted-foreground hover:text-foreground"
                 >
                   Explore
                 </Link>
-                
+
                 {user?.role === "buyer" && (
-                  <Link 
-                    to="/my-bids" 
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    My Bids
-                  </Link>
+                  <>
+                    <Link
+                      to="/buyer/bids"
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      My Bids
+                    </Link>
+                    <Link
+                      to="/buyer/feedback"
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      Feedback
+                    </Link>
+                  </>
                 )}
-                
+
                 {user?.role === "seller" && (
-                  <Link 
-                    to="/dashboard" 
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    Dashboard
-                  </Link>
+                  <>
+                    <Link
+                      to="/seller/dashboard"
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      Dashboard
+                    </Link>
+                    <Link
+                      to="/seller/create"
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      Create Auction
+                    </Link>
+                  </>
                 )}
-                
+
                 {user?.role === "admin" && (
-                  <Link 
-                    to="/admin" 
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    Admin
-                  </Link>
+                  <>
+                    <Link
+                      to="/admin/dashboard"
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      Dashboard
+                    </Link>
+                    <Link
+                      to="/admin/users"
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      Users
+                    </Link>
+                  </>
                 )}
 
                 <div className="flex items-center space-x-2">
@@ -71,14 +95,14 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link 
-                  to="/login" 
+                <Link
+                  to="/login"
                   className="text-muted-foreground hover:text-foreground"
                 >
                   Login
                 </Link>
-                <Link 
-                  to="/register" 
+                <Link
+                  to="/register"
                   className="bg-primary text-primary-foreground px-3 py-1 rounded-md text-sm hover:bg-primary/90"
                 >
                   Register
