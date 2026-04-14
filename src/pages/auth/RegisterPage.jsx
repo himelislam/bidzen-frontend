@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { register as registerUser } from "@/api/auth.api";
 import toast from "react-hot-toast";
+import { useEffect } from "react";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -18,7 +19,12 @@ const registerSchema = z.object({
 export default function RegisterPage() {
   const { setAuth } = useAuth();
   const navigate = useNavigate();
-  
+
+  // Set page title
+  useEffect(() => {
+    document.title = "Register - BidZen";
+  }, []);
+
   const {
     register,
     handleSubmit,
@@ -55,7 +61,7 @@ export default function RegisterPage() {
             </Link>
           </p>
         </div>
-        
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-foreground">
