@@ -19,7 +19,10 @@ export default function HomePage() {
     try {
       setLoading(true);
       const response = await getAuctions();
-      setAuctions(response.data || []);
+      console.log("API Response:", response);
+      const auctionsData = response.data?.data || response.data || [];
+      console.log("Auctions data:", auctionsData);
+      setAuctions(Array.isArray(auctionsData) ? auctionsData : []);
     } catch (err) {
       console.error("Failed to fetch auctions:", err);
       setAuctions([]);
@@ -37,14 +40,15 @@ export default function HomePage() {
   }, []);
 
   // Get first 6 active auctions for hero section
-  const featuredAuctions = auctions
-    .filter(auction => auction.status === 'active')
-    .slice(0, 6);
+  const featuredAuctions = Array.isArray(auctions)
+    ? auctions.filter(auction => auction.status === 'active').slice(0, 6)
+    : [];
 
   // Get closing soon auctions
-  const closingSoonAuctions = auctions
-    .filter(auction => auction.status === 'active' && isClosingSoon(auction.endTime))
-    .sort((a, b) => new Date(a.endTime) - new Date(b.endTime));
+  const closingSoonAuctions = Array.isArray(auctions)
+    ? auctions.filter(auction => auction.status === 'active' && isClosingSoon(auction.endTime))
+      .sort((a, b) => new Date(a.endTime) - new Date(b.endTime))
+    : [];
 
   return (
     <div className="min-h-screen bg-background">
