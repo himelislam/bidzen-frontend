@@ -3,7 +3,18 @@ import api from "./axiosInstance";
 export const getUserBids = async () => {
   try {
     const response = await api.get('/api/auctions/my-bids');
-    return response.data.data || response.data; // Handle both response structures
+    console.log('getUserBids API response:', response);
+
+    // Extract bids from response structure
+    let bids = [];
+    if (response?.data?.data?.bids && Array.isArray(response.data.data.bids)) {
+      bids = response.data.data.bids;
+    } else if (response?.data?.bids && Array.isArray(response.data.bids)) {
+      bids = response.data.bids;
+    }
+
+    console.log('Extracted user bids:', bids);
+    return { data: bids };
   } catch (error) {
     console.error("Failed to fetch user bids:", error);
     throw error;

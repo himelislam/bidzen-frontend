@@ -24,7 +24,9 @@ export default function MyBidsPage() {
         setLoading(true);
         // Use dedicated user API for efficient data fetching
         const response = await getUserBids();
+        console.log('MyBidsPage - getUserBids response:', response);
         const userBids = response.data || [];
+        console.log('MyBidsPage - extracted bids:', userBids);
         setUserBids(userBids.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
       } catch (error) {
         console.error("Failed to fetch user bids:", error);

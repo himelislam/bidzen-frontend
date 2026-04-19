@@ -31,12 +31,11 @@ export const router = createBrowserRouter([
       // Public routes
       { index: true, element: <Suspense fallback={<LoadingSpinner />}><HomePage /></Suspense> },
       { path: "auctions", element: <Suspense fallback={<LoadingSpinner />}><ExploreAuctionsPage /></Suspense> },
-      { path: "auctions/:id", element: <Suspense fallback={<LoadingSpinner />}><AuctionDetailsPage /></Suspense> },
       { path: "sellers/:id", element: <Suspense fallback={<LoadingSpinner />}><SellerProfilePage /></Suspense> },
       { path: "login", element: <Suspense fallback={<LoadingSpinner />}><LoginPage /></Suspense> },
       { path: "register", element: <Suspense fallback={<LoadingSpinner />}><RegisterPage /></Suspense> },
 
-      // Authenticated — any role
+      // Authenticated -- any role
       {
         element: <ProtectedRoute />,
         children: [
@@ -71,6 +70,9 @@ export const router = createBrowserRouter([
           },
         ],
       },
+
+      // Public auction details route (must come after protected routes)
+      { path: "auctions/:id", element: <Suspense fallback={<LoadingSpinner />}><AuctionDetailsPage /></Suspense> },
 
       { path: "*", element: <NotFoundPage /> },
     ],
