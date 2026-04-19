@@ -8,9 +8,9 @@ import toast from "react-hot-toast";
 import { useEffect } from "react";
 
 const registerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
+  name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name cannot exceed 50 characters"),
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(6, "Password must be at least 6 characters").max(128, "Password cannot exceed 128 characters"),
   role: z.enum(["buyer", "seller"], {
     required_error: "Please select a role",
   }),
@@ -36,10 +36,40 @@ export default function RegisterPage() {
   const onSubmit = async (data) => {
     try {
       const response = await registerUser(data);
-      toast.success("Registration successful! Please login.");
-      navigate("/login");
+
+      console.log('Registration response:', response);
+      console.log('Response data:', response.data);
+
+      // Extract user and token from registration response
+      const { user, token } = response.data.data;
+
+      console.log('Extracted user:', user);
+      console.log('Extracted token:', token);
+
+      // Set authentication state
+      setAuth(token, user);
+
+      console.log('Auth set, navigating to dashboard...');
+
+      // Redirect to appropriate dashboard based on role
+      if (user.role === 'buyer') {
+        console.log('Navigating to buyer dashboard');
+        navigate('/buyer/dashboard');
+      } else if (user.role === 'seller') {
+        console.log('Navigating to seller dashboard');
+        navigate('/seller/dashboard');
+      } else if (user.role === 'admin') {
+        console.log('Navigating to admin dashboard');
+        navigate('/admin/dashboard');
+      } else {
+        console.log('Fallback to home page');
+        navigate('/');
+      }
+
+      toast.success(`Welcome to BidZen, ${user.name}!`);
     } catch (error) {
-      const message = error.response?.data?.message || "Registration failed";
+      console.error('Registration error:', error);
+      const message = error.response?.data?.error?.message || error.response?.data?.message || "Registration failed";
       toast.error(message);
     }
   };

@@ -14,7 +14,7 @@ import toast from "react-hot-toast";
 const bidSchema = z.object({
   amount: z
     .number()
-    .min(1, "Bid amount must be at least ৳1")
+    .min(1, "Bid amount must be at least 1")
     .refine(
       (val) => val % 1 === 0,
       "Bid amount must be a whole number"

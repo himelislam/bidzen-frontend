@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useParams, useNavigate } from "react-router-dom";
-import { getAuctionById } from "@/api/auction.api";
+import { getAuctionById, updateAuction } from "@/api/auction.api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,8 +16,17 @@ const auctionSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters").max(100, "Title must be less than 100 characters"),
   description: z.string().min(10, "Description must be at least 10 characters").max(1000, "Description must be less than 1000 characters"),
   startingPrice: z.number().min(1, "Starting price must be at least ৳1"),
+  startTime: z.string().min(1, "Start time is required"),
   endTime: z.string().min(1, "End time is required"),
   category: z.string().min(1, "Category is required"),
+}).refine((data) => {
+  const startTime = new Date(data.startTime);
+  const endTime = new Date(data.endTime);
+  // Only validate that endTime is after startTime
+  return endTime > startTime;
+}, {
+  message: "End time must be after start time",
+  path: ["endTime"],
 });
 
 const categories = [
@@ -61,8 +70,8 @@ export default function EditListingPage() {
         const response = await getAuctionById(id);
         const auctionData = response.data;
 
-        if (auctionData.status !== 'active') {
-          toast.error("Only active auctions can be edited");
+        if (auctionData.status !== 'scheduled') {
+          toast.error("Only scheduled auctions can be edited");
           navigate("/seller/dashboard");
           return;
         }
@@ -75,8 +84,10 @@ export default function EditListingPage() {
         setValue("startingPrice", auctionData.startingPrice);
         setValue("category", auctionData.category || "");
 
-        // Format endTime for datetime-local input
+        // Format startTime and endTime for datetime-local input
+        const startTime = new Date(auctionData.startTime);
         const endTime = new Date(auctionData.endTime);
+        setValue("startTime", startTime.toISOString().slice(0, 16));
         setValue("endTime", endTime.toISOString().slice(0, 16));
       } catch (error) {
         toast.error(error.response?.data?.message || "Failed to fetch auction");
@@ -92,18 +103,33 @@ export default function EditListingPage() {
   const onSubmit = async (data) => {
     try {
       setIsSubmitting(true);
-      // Convert endTime to proper format and update auction
+
+      // Convert dates to proper format and update auction
       const auctionData = {
-        ...data,
+        title: data.title,
+        description: data.description,
+        startingPrice: data.startingPrice,
+        startTime: new Date(data.startTime).toISOString(),
         endTime: new Date(data.endTime).toISOString(),
+        category: data.category,
       };
 
-      // This would normally call an API to update auction
-      // For now, we'll simulate success
-      toast.success("Auction updated successfully!");
-      navigate("/seller/dashboard");
+      console.log('Updating auction with data:', auctionData);
+      const response = await updateAuction(id, auctionData);
+      console.log('Update auction response:', response);
+
+      // Handle API response according to specification
+      if (response.data?.success) {
+        toast.success("Auction updated successfully!");
+        navigate("/seller/dashboard");
+      } else {
+        const message = response.data?.message || "Failed to update auction";
+        toast.error(message);
+      }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update auction");
+      console.error("Auction update error:", error);
+      const message = error.response?.data?.message || "Failed to update auction";
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -218,6 +244,21 @@ export default function EditListingPage() {
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="startTime">Auction Start Time *</Label>
+                  <Input
+                    id="startTime"
+                    type="datetime-local"
+                    {...register("startTime")}
+                  />
+                  {errors.startTime && (
+                    <p className="text-sm text-destructive">{errors.startTime.message}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Select when the auction should start
+                  </p>
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="endTime">Auction End Time *</Label>
                   <Input
                     id="endTime"
@@ -230,7 +271,7 @@ export default function EditListingPage() {
                     <p className="text-sm text-destructive">{errors.endTime.message}</p>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    Auction must end between 1 hour and 30 days from now
+                    Auction must end after start time
                   </p>
                 </div>
               </div>

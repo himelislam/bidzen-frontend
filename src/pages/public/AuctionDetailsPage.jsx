@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePolling } from "@/hooks/usePolling";
 import { POLLING_INTERVAL_DETAIL } from "@/utils/constants";
 import { setMetaTags, clearMetaTags } from "@/utils/seo";
+import { extractAuctionData, extractBidsData } from "@/api/apiHelpers";
 
 export default function AuctionDetailsPage() {
   const { id } = useParams();
@@ -47,8 +48,14 @@ export default function AuctionDetailsPage() {
         getBids(id)
       ]);
 
-      setAuction(auctionResponse.data);
-      setBids(bidsResponse.data || []);
+      console.log("Bids API Response:", bidsResponse);
+      const extractedBids = extractBidsData(bidsResponse);
+      console.log("Extracted bids:", extractedBids);
+      console.log("Extracted bids type:", typeof extractedBids);
+      console.log("Extracted bids is array:", Array.isArray(extractedBids));
+
+      setAuction(extractAuctionData(auctionResponse));
+      setBids(extractedBids);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to fetch auction details");
     } finally {
@@ -168,6 +175,16 @@ export default function AuctionDetailsPage() {
             <p className="text-amber-700 dark:text-amber-300">
               Winning bid: <PriceDisplay amount={auction.currentHighestBid} />
             </p>
+            {/* Leave Feedback Button - Only for winner */}
+            {user?.role === 'buyer' && auction.winner._id === user?._id && (
+              <div className="mt-4">
+                <Button asChild>
+                  <Link to={`/auctions/${auction._id}/feedback`}>
+                    Leave Feedback
+                  </Link>
+                </Button>
+              </div>
+            )}
           </div>
         )}
 

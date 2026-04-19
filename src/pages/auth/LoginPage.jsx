@@ -9,7 +9,7 @@ import { useEffect } from "react";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(6, "Password must be at least 6 characters").max(128, "Password cannot exceed 128 characters"),
 });
 
 export default function LoginPage() {
@@ -32,12 +32,42 @@ export default function LoginPage() {
   const onSubmit = async (data) => {
     try {
       const response = await login(data);
-      const { token, user } = response.data;
+
+      console.log('Login response:', response);
+      console.log('Response data:', response.data);
+
+      // Extract token and user from backend response structure
+      const { token, user } = response.data.data;
+
+      console.log('Extracted token:', token);
+      console.log('Extracted user:', user);
+
+      if (!token || !user) {
+        throw new Error("Invalid login response - missing token or user data");
+      }
+
       setAuth(token, user);
       toast.success("Login successful!");
-      navigate("/");
+
+      console.log('Auth set, navigating to dashboard...');
+
+      // Redirect to appropriate dashboard based on user role
+      if (user.role === 'buyer') {
+        console.log('Navigating to buyer dashboard');
+        navigate('/buyer/dashboard');
+      } else if (user.role === 'seller') {
+        console.log('Navigating to seller dashboard');
+        navigate('/seller/dashboard');
+      } else if (user.role === 'admin') {
+        console.log('Navigating to admin dashboard');
+        navigate('/admin/dashboard');
+      } else {
+        console.log('Fallback to home page');
+        navigate('/');
+      }
     } catch (error) {
-      const message = error.response?.data?.message || "Login failed";
+      console.error("Login error:", error);
+      const message = error.response?.data?.error?.message || error.response?.data?.message || error.message || "Login failed";
       toast.error(message);
     }
   };

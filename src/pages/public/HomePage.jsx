@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { isClosingSoon } from "@/utils/timeHelpers";
 import { usePolling } from "@/hooks/usePolling";
 import { POLLING_INTERVAL_LIST } from "@/utils/constants";
+import { extractAuctionsData } from "@/api/apiHelpers";
 
 export default function HomePage() {
   // Set page title
@@ -19,7 +20,8 @@ export default function HomePage() {
     try {
       setLoading(true);
       const response = await getAuctions();
-      setAuctions(response.data || []);
+      const auctionsData = extractAuctionsData(response);
+      setAuctions(Array.isArray(auctionsData) ? auctionsData : []);
     } catch (err) {
       console.error("Failed to fetch auctions:", err);
       setAuctions([]);

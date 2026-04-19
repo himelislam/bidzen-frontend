@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { getAuctions } from "@/api/auction.api";
 import AuctionGrid from "@/components/auction/AuctionGrid";
+import { usePolling } from "@/hooks/usePolling";
+import { POLLING_INTERVAL_LIST } from "@/utils/constants";
+import { extractAuctionsData } from "@/api/apiHelpers";
 import EmptyState from "@/components/shared/EmptyState";
 
 export default function SellerProfilePage() {
@@ -19,7 +22,8 @@ export default function SellerProfilePage() {
       try {
         setLoading(true);
         const response = await getAuctions();
-        const allAuctions = response.data || [];
+        // Extract auctions from nested response structure
+        const allAuctions = extractAuctionsData(response);
 
         // Filter auctions by this seller
         const sellerAuctions = allAuctions.filter(auction =>

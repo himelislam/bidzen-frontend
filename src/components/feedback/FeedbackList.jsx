@@ -3,31 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Star } from "lucide-react";
 import EmptyState from "@/components/shared/EmptyState";
-
-// Mock feedback data for demo
-const mockFeedback = [
-  {
-    _id: "1",
-    reviewer: { name: "John Doe", email: "john@example.com" },
-    rating: 5,
-    reviewText: "Excellent auction! The seller was very responsive and the item was exactly as described. Would definitely buy from them again!",
-    createdAt: "2024-04-10T14:30:00Z",
-  },
-  {
-    _id: "2",
-    reviewer: { name: "Jane Smith", email: "jane@example.com" },
-    rating: 4,
-    reviewText: "Good experience overall. The auction process was smooth and the item quality was great. Shipping could have been faster though.",
-    createdAt: "2024-04-08T09:15:00Z",
-  },
-  {
-    _id: "3",
-    reviewer: { name: "Bob Wilson", email: "bob@example.com" },
-    rating: 5,
-    reviewText: "Perfect transaction! Seller was professional and the item exceeded my expectations. Highly recommended!",
-    createdAt: "2024-04-05T16:45:00Z",
-  },
-];
+import { getAuctionFeedback } from "@/api/auction.api";
+import { extractFeedbacksData } from "@/api/apiHelpers";
 
 export default function FeedbackList({ auctionId }) {
   const [feedback, setFeedback] = useState([]);
@@ -37,14 +14,23 @@ export default function FeedbackList({ auctionId }) {
     const fetchFeedback = async () => {
       try {
         setLoading(true);
-        // This would normally call an API to fetch feedback
-        // For now, we'll use mock data
-        setTimeout(() => {
-          setFeedback(mockFeedback);
-          setLoading(false);
-        }, 1000);
+        console.log('Fetching feedback for auction:', auctionId);
+        const response = await getAuctionFeedback(auctionId);
+        console.log('Feedback API response:', response);
+
+        // Extract feedback from response structure
+        let feedback = [];
+        if (response?.data?.feedbacks && Array.isArray(response.data.feedbacks)) {
+          feedback = response.data.feedbacks;
+        } else if (response?.data?.data?.feedbacks && Array.isArray(response.data.data.feedbacks)) {
+          feedback = response.data.data.feedbacks;
+        }
+
+        console.log('Extracted feedback:', feedback);
+        setFeedback(feedback);
       } catch (error) {
         console.error("Failed to fetch feedback:", error);
+      } finally {
         setLoading(false);
       }
     };
@@ -57,11 +43,10 @@ export default function FeedbackList({ auctionId }) {
       {[1, 2, 3, 4, 5].map((star) => (
         <Star
           key={star}
-          className={`w-4 h-4 ${
-            star <= rating
-              ? "fill-yellow-400 text-yellow-400"
-              : "text-gray-300"
-          }`}
+          className={`w-4 h-4 ${star <= rating
+            ? "fill-yellow-400 text-yellow-400"
+            : "text-gray-300"
+            }`}
         />
       ))}
     </div>
@@ -90,8 +75,8 @@ export default function FeedbackList({ auctionId }) {
           <CardTitle>Reviews</CardTitle>
         </CardHeader>
         <CardContent>
-          <EmptyState 
-            title="No reviews yet" 
+          <EmptyState
+            title="No reviews yet"
             description="Be the first to leave a review for this auction"
           />
         </CardContent>
@@ -111,14 +96,14 @@ export default function FeedbackList({ auctionId }) {
               <div className="flex items-start gap-4">
                 <Avatar>
                   <AvatarFallback>
-                    {review.reviewer.name.charAt(0).toUpperCase()}
+                    {review.author.name.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-2">
                     <div>
                       <h4 className="font-medium text-foreground">
-                        {review.reviewer.name}
+                        {review.author.name}
                       </h4>
                       <p className="text-sm text-muted-foreground">
                         {new Date(review.createdAt).toLocaleDateString()}

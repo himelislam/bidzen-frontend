@@ -6,9 +6,21 @@ export const useAuthStore = create(
     (set) => ({
       token: null,
       user: null,
-      setAuth: (token, user) => set({ token, user }),
-      logout: () => set({ token: null, user: null }),
+      setAuth: (token, user) => {
+        console.log("AuthStore: setAuth called with", { token, user });
+        set({ token, user });
+        console.log("AuthStore: State after setAuth", { token, user });
+      },
+      logout: () => {
+        console.log("AuthStore: logout called");
+        set({ token: null, user: null });
+      },
     }),
-    { name: "bidzen-auth" }   // persists to localStorage automatically
+    {
+      name: "bidzen-auth",   // persists to localStorage automatically
+      onRehydrateStorage: () => (state) => {
+        console.log("AuthStore: Rehydrating state", state);
+      }
+    }
   )
 );

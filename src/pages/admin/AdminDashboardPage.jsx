@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getAuctions } from "@/api/auction.api";
+import AuctionGrid from "@/components/auction/AuctionGrid";
+import { usePolling } from "@/hooks/usePolling";
+import { POLLING_INTERVAL_LIST } from "@/utils/constants";
+import { extractAuctionsData } from "@/api/apiHelpers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +30,8 @@ export default function AdminDashboardPage() {
       try {
         setLoading(true);
         const response = await getAuctions();
-        setAuctions(response.data || []);
+        // Extract auctions from nested response structure
+        setAuctions(extractAuctionsData(response));
       } catch (error) {
         console.error("Failed to fetch system data:", error);
       } finally {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getAuctions } from "@/api/auction.api";
+import { getUserAuctions, deleteAuction, getSellerStats } from "@/api/user.api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,12 +25,12 @@ export default function SellerDashboardPage() {
     const fetchSellerAuctions = async () => {
       try {
         setLoading(true);
-        const response = await getAuctions();
-        // Filter auctions by current seller (you'd normally get seller ID from auth context)
-        // For now, we'll show all auctions as a demo
-        setAuctions(response.data || []);
+        // Use dedicated user API to get seller's auctions only
+        const auctions = await getUserAuctions();
+        setAuctions(auctions);
       } catch (error) {
         console.error("Failed to fetch seller auctions:", error);
+        toast.error("Failed to load your auctions");
       } finally {
         setLoading(false);
       }
@@ -38,6 +38,27 @@ export default function SellerDashboardPage() {
 
     fetchSellerAuctions();
   }, []);
+
+  useEffect(() => {
+    const fetchSellerStatistics = async () => {
+      try {
+        const stats = await getSellerStats();
+        setSellerStats(stats);
+      } catch (error) {
+        console.error("Failed to fetch seller stats:", error);
+      }
+    };
+
+    fetchSellerStatistics();
+  }, []);
+
+  const [sellerStats, setSellerStats] = useState({
+    totalAuctions: 0,
+    activeAuctions: 0,
+    totalRevenue: 0,
+    averageSalePrice: 0,
+    successRate: 0
+  });
 
   const stats = {
     total: auctions.length,
@@ -50,9 +71,8 @@ export default function SellerDashboardPage() {
     try {
       setIsDeleting(true);
 
-      // This would normally call an API to delete the auction
-      // For now, we'll simulate success
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call real API to delete auction
+      await deleteAuction(auctionId);
 
       setAuctions(auctions.filter(a => a._id !== auctionId));
       setDeleteDialog({ open: false, auctionId: null });
@@ -92,8 +112,8 @@ export default function SellerDashboardPage() {
           </Button>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {/* Enhanced Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Auctions</CardTitle>
@@ -112,18 +132,32 @@ export default function SellerDashboardPage() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Scheduled</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{stats.scheduled}</div>
+              <div className="text-2xl font-bold text-green-600">
+                <PriceDisplay amount={sellerStats.totalRevenue || 0} />
+              </div>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Closed</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Success Rate</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-600">{stats.closed}</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {sellerStats.successRate || 0}%
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Avg Sale Price</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-purple-600">
+                <PriceDisplay amount={sellerStats.averageSalePrice || 0} />
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -183,7 +217,7 @@ export default function SellerDashboardPage() {
                       <div className="flex gap-2">
                         {auction.status === 'scheduled' && (
                           <Button asChild variant="outline" size="sm">
-                            <Link to={`/seller/edit/${auction._id}`}>Edit</Link>
+                            <Link to={`/seller/listings/${auction._id}/edit`}>Edit</Link>
                           </Button>
                         )}
                         {auction.status === 'scheduled' && (

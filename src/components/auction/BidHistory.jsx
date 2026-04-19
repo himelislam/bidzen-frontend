@@ -3,10 +3,14 @@ import PriceDisplay from "@/components/shared/PriceDisplay";
 import EmptyState from "@/components/shared/EmptyState";
 
 export default function BidHistory({ bids }) {
-  if (!bids || bids.length === 0) {
+  console.log("BidHistory received bids:", bids);
+  console.log("Type of bids:", typeof bids);
+  console.log("Is array:", Array.isArray(bids));
+
+  if (!bids || !Array.isArray(bids) || bids.length === 0) {
     return (
-      <EmptyState 
-        title="No bids yet" 
+      <EmptyState
+        title="No bids yet"
         description="Be the first to place a bid on this auction!"
       />
     );
@@ -25,8 +29,8 @@ export default function BidHistory({ bids }) {
               </span>
             </div>
             <div className="text-right">
-              <PriceDisplay 
-                amount={bid.amount} 
+              <PriceDisplay
+                amount={bid.amount}
                 className="text-lg font-bold text-primary"
               />
             </div>

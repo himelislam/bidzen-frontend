@@ -4,6 +4,7 @@ import AuctionGrid from "@/components/auction/AuctionGrid";
 import EmptyState from "@/components/shared/EmptyState";
 import { usePolling } from "@/hooks/usePolling";
 import { POLLING_INTERVAL_LIST } from "@/utils/constants";
+import { extractAuctionsData } from "@/api/apiHelpers";
 
 export default function ExploreAuctionsPage() {
   // Set page title
@@ -20,7 +21,8 @@ export default function ExploreAuctionsPage() {
       setLoading(true);
       setError(null);
       const response = await getAuctions();
-      let filteredAuctions = response.data;
+      // Extract auctions from nested response structure
+      let filteredAuctions = extractAuctionsData(response);
 
       if (searchTerm) {
         filteredAuctions = filteredAuctions.filter(auction =>

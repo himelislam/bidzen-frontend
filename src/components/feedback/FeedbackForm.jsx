@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Star } from "lucide-react";
 import toast from "react-hot-toast";
+import { submitFeedback } from "@/api/feedback.api";
 
 const feedbackSchema = z.object({
   rating: z.number().min(1, "Please select a rating").max(5, "Rating must be between 1-5"),
@@ -36,9 +37,8 @@ export default function FeedbackForm({ auctionId, onSubmitted }) {
   const onSubmit = async (data) => {
     try {
       setIsSubmitting(true);
-      
-      // This would normally call an API to submit feedback
-      // For now, we'll simulate success
+
+      await submitFeedback(auctionId, data);
       toast.success("Review submitted successfully!");
       onSubmitted?.();
     } catch (error) {
@@ -64,11 +64,10 @@ export default function FeedbackForm({ auctionId, onSubmitted }) {
           onMouseLeave={() => setHoveredStar(0)}
         >
           <Star
-            className={`w-6 h-6 ${
-              star <= (hoveredStar || selectedRating)
-                ? "fill-yellow-400 text-yellow-400"
-                : "text-gray-300"
-            }`}
+            className={`w-6 h-6 ${star <= (hoveredStar || selectedRating)
+              ? "fill-yellow-400 text-yellow-400"
+              : "text-gray-300"
+              }`}
           />
         </button>
       ))}

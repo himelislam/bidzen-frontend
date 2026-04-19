@@ -4,6 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate, useParams } from "react-router-dom";
 import { getAuctionById } from "@/api/auction.api";
+import { submitFeedback } from "@/api/feedback.api";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import toast from "react-hot-toast";
+import { extractAuctionData } from "@/api/apiHelpers";
 
 const feedbackSchema = z.object({
   rating: z.number().min(1, "Please select a rating").max(5, "Rating must be between 1-5"),
@@ -50,11 +53,18 @@ export default function FeedbackFormPage() {
       try {
         setLoading(true);
         const response = await getAuctionById(id);
-        const auctionData = response.data;
+        const auctionData = extractAuctionData(response);
 
         // Only allow feedback for closed auctions where user was winner
-        if (auctionData.status !== 'closed') {
+        if (!auctionData || auctionData.status !== 'closed') {
           toast.error("Feedback can only be left for completed auctions");
+          navigate("/auctions/" + id);
+          return;
+        }
+
+        // Verify user is actually the winner of this auction
+        if (auctionData.winner !== user?._id) {
+          toast.error("Only the auction winner can leave feedback");
           navigate("/auctions/" + id);
           return;
         }
@@ -75,8 +85,12 @@ export default function FeedbackFormPage() {
     try {
       setIsSubmitting(true);
 
-      // This would normally call an API to submit feedback
-      // For now, we'll simulate success
+      // Call API to submit feedback
+      await submitFeedback(id, {
+        rating: data.rating,
+        reviewText: data.comment
+      });
+
       toast.success("Feedback submitted successfully!");
       navigate("/buyer/bids");
     } catch (error) {

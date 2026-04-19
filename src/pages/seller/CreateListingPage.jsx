@@ -3,19 +3,48 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
+import { createAuction } from "@/api/auction.api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DateTimePicker } from "@/components/ui/datepicker";
 import toast from "react-hot-toast";
 
 const auctionSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters").max(100, "Title must be less than 100 characters"),
   description: z.string().min(10, "Description must be at least 10 characters").max(1000, "Description must be less than 1000 characters"),
   startingPrice: z.number().min(1, "Starting price must be at least ৳1"),
-  endTime: z.string().min(1, "End time is required"),
+  startTime: z.string().refine((date) => {
+    const selectedDate = new Date(date);
+    const now = new Date();
+    const minDate = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour from now
+
+    if (selectedDate < minDate) {
+      return "Auction must start at least 1 hour from now";
+    }
+    return true;
+  }, {
+    message: "Start time is required",
+  }),
+  endTime: z.string().refine((date) => {
+    const selectedDate = new Date(date);
+    const now = new Date();
+    const minDate = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour from now
+    const maxDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
+
+    if (selectedDate < minDate) {
+      return "Auction must start at least 1 hour from now";
+    }
+    if (selectedDate > maxDate) {
+      return "Auction must end within 30 days from now";
+    }
+    return true;
+  }, {
+    message: "End time is required",
+  }),
   category: z.string().min(1, "Category is required"),
 });
 
@@ -60,34 +89,50 @@ export default function CreateListingPage() {
   const onSubmit = async (data) => {
     try {
       setIsSubmitting(true);
-      // Convert endTime to proper format and create auction
+
+      // Debug: Log form data before submission
+      console.log("🔍 Form Data Being Submitted:", data);
+      console.log("🔍 Form Validation:", {
+        title: data.title,
+        description: data.description,
+        startingPrice: data.startingPrice,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        category: data.category
+      });
+
+      // Prepare auction data according to backend API specification
       const auctionData = {
-        ...data,
+        title: data.title,
+        description: data.description,
+        startingPrice: data.startingPrice,
+        startTime: new Date(data.startTime).toISOString(),
         endTime: new Date(data.endTime).toISOString(),
+        category: data.category
       };
 
-      // This would normally call an API to create the auction
-      // For now, we'll simulate success
-      toast.success("Auction created successfully!");
-      navigate("/seller/dashboard");
+      // Call API to create auction
+      console.log("🚀 Calling API to create auction...");
+      const response = await createAuction(auctionData);
+      console.log("📥 API Response:", response);
+
+      if (response.success) {
+        console.log("✅ Auction created successfully!");
+        toast.success("Auction created successfully!");
+        navigate("/seller/dashboard");
+      } else {
+        console.log("❌ API Error:", response);
+        toast.error(response.message || "Failed to create auction");
+      }
     } catch (error) {
+      console.log("🚨 Network/Validation Error:", error);
       toast.error(error.response?.data?.message || "Failed to create auction");
     } finally {
+      console.log("🔄 Submission complete, setting isSubmitting to false");
       setIsSubmitting(false);
     }
   };
 
-  const getMinDateTime = () => {
-    const now = new Date();
-    now.setHours(now.getHours() + 1); // Minimum 1 hour from now
-    return now.toISOString().slice(0, 16);
-  };
-
-  const getMaxDateTime = () => {
-    const now = new Date();
-    now.setDate(now.getDate() + 30); // Maximum 30 days from now
-    return now.toISOString().slice(0, 16);
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -115,7 +160,6 @@ export default function CreateListingPage() {
                     <p className="text-sm text-destructive">{errors.title.message}</p>
                   )}
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="category">Category *</Label>
                   <Select onValueChange={(value) => setValue("category", value)}>
@@ -164,22 +208,15 @@ export default function CreateListingPage() {
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="endTime">Auction End Time *</Label>
-                  <Input
-                    id="endTime"
-                    type="datetime-local"
-                    min={getMinDateTime()}
-                    max={getMaxDateTime()}
-                    {...register("endTime")}
-                  />
-                  {errors.endTime && (
-                    <p className="text-sm text-destructive">{errors.endTime.message}</p>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    Auction must end between 1 hour and 30 days from now
-                  </p>
-                </div>
+                <DateTimePicker
+                  value={watch("endTime")}
+                  onChange={(value) => setValue("endTime", value)}
+                  min={new Date(Date.now() + 60 * 60 * 1000)} // 1 hour from now
+                  max={new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)} // 30 days from now
+                  label="Auction End Time"
+                  required={true}
+                  error={errors.endTime?.message}
+                />
               </div>
 
               <div className="flex gap-4">

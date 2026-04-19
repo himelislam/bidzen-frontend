@@ -33,16 +33,16 @@ export default function Navbar() {
                 {user?.role === "buyer" && (
                   <>
                     <Link
-                      to="/buyer/bids"
+                      to="/buyer/dashboard"
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      Dashboard
+                    </Link>
+                    <Link
+                      to="/my-bids"
                       className="text-muted-foreground hover:text-foreground"
                     >
                       My Bids
-                    </Link>
-                    <Link
-                      to="/buyer/feedback"
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      Feedback
                     </Link>
                   </>
                 )}
@@ -60,6 +60,12 @@ export default function Navbar() {
                       className="text-muted-foreground hover:text-foreground"
                     >
                       Create Auction
+                    </Link>
+                    <Link
+                      to="/seller/listings"
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      My Listings
                     </Link>
                   </>
                 )}

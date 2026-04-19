@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getAuctions } from "@/api/auction.api";
-import { getBids } from "@/api/bid.api";
+import { getUserBids } from "@/api/user.api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import PriceDisplay from "@/components/shared/PriceDisplay";
 import AuctionStatusBadge from "@/components/auction/AuctionStatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
+import { extractBidsData } from "@/api/apiHelpers";
 
 export default function MyBidsPage() {
   const [userBids, setUserBids] = useState([]);
@@ -22,27 +22,10 @@ export default function MyBidsPage() {
     const fetchUserBids = async () => {
       try {
         setLoading(true);
-        const auctionsResponse = await getAuctions();
-        const auctions = auctionsResponse.data || [];
-
-        // Get all bids for all auctions and filter by current user
-        const allBids = [];
-        for (const auction of auctions) {
-          try {
-            const bidsResponse = await getBids(auction._id);
-            const auctionBids = bidsResponse.data || [];
-            allBids.push(...auctionBids.map(bid => ({
-              ...bid,
-              auction
-            })));
-          } catch (error) {
-            console.error(`Failed to fetch bids for auction ${auction._id}:`, error);
-          }
-        }
-
-        // Filter bids by current user (you'd normally get user ID from auth context)
-        // For now, we'll show all bids as a demo
-        setUserBids(allBids.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+        // Use dedicated user API for efficient data fetching
+        const response = await getUserBids();
+        const userBids = response.data || [];
+        setUserBids(userBids.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
       } catch (error) {
         console.error("Failed to fetch user bids:", error);
       } finally {
