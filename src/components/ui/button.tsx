@@ -31,36 +31,21 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       "icon-lg": "size-9",
     };
 
-  },
-    },
-defaultVariants: {
-  variant: "default",
-    size: "default",
-    },
+    const Comp = asChild ? Slot.Root : "button"
+
+    return (
+      <Comp
+        data-slot="button"
+        data-variant={variant}
+        data-size={size}
+        className={cn(baseClasses, variantClasses[variant], sizeClasses[size])}
+        {...props}
+        ref={ref}
+      />
+    )
   }
 )
 
-function Button({
-  className,
-  variant = "default",
-  size = "default",
-  asChild = false,
-  ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }) {
-  const Comp = asChild ? Slot.Root : "button"
+Button.displayName = "Button";
 
-  return (
-    <Comp
-      data-slot="button"
-      data-variant={variant}
-      data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
-  )
-}
-
-export { Button, buttonVariants }
+export { Button };
