@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Slot } from "radix-ui"
+import { Slot } from "@radix-ui/react-slot"
 
 import { cn } from "@/lib/utils"
 
@@ -31,7 +31,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       "icon-lg": "size-9",
     };
 
-    const Comp = asChild ? Slot.Root : "button"
+    const Comp = asChild ? Slot : "button"
 
     return (
       <Comp
