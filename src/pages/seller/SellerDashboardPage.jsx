@@ -79,7 +79,7 @@ export default function SellerDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen pt-20 bg-slate-950 text-white">
 
       {/* Glow Background */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-purple-600/20 blur-[140px] rounded-full pointer-events-none"></div>

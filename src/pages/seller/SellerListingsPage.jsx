@@ -41,7 +41,7 @@ export default function SellerListingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h- pt-20 bg-slate-950 text-white">
 
       {/* Glow background */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-purple-600/20 blur-[120px] rounded-full pointer-events-none"></div>

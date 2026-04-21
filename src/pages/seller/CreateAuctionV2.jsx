@@ -94,7 +94,7 @@ export default function CreateAuctionV2() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen pt-20 bg-slate-950 text-white">
 
       {/* HEADER */}
       <div className="text-center py-12">

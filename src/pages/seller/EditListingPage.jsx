@@ -111,7 +111,7 @@ export default function EditListingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white relative overflow-hidden">
+    <div className="min-h-screen pt-20 bg-slate-950 text-white relative overflow-hidden">
 
       {/* Glow background */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-indigo-600/20 blur-[140px] rounded-full"></div>
