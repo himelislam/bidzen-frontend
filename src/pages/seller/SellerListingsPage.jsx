@@ -1,119 +1,143 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import PriceDisplay from "@/components/shared/PriceDisplay";
 import AuctionStatusBadge from "@/components/auction/AuctionStatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
-import { extractAuctionsData } from "@/api/apiHelpers";
-import { useAuth } from "@/hooks/useAuth";
 import { getUserAuctions } from "@/api/user.api";
 import toast from "react-hot-toast";
 
 export default function SellerListingsPage() {
-  const { user } = useAuth();
   const [auctions, setAuctions] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Set page title
   useEffect(() => {
     document.title = "My Listings - BidZen";
   }, []);
 
   useEffect(() => {
-    const fetchSellerAuctions = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const userAuctions = await getUserAuctions();
-        setAuctions(userAuctions);
-      } catch (error) {
-        console.error("Failed to fetch seller auctions:", error);
-        toast.error("Failed to load your listings");
+        const res = await getUserAuctions();
+        setAuctions(res || []);
+      } catch (err) {
+        toast.error("Failed to load listings");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchSellerAuctions();
+    fetchData();
   }, []);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <p className="mt-4 text-muted-foreground">Loading your listings...</p>
-        </div>
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+        <div className="animate-spin h-10 w-10 border-2 border-purple-500 border-t-transparent rounded-full"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">My Listings</h1>
-          <p className="text-muted-foreground">Manage your auction listings</p>
+    <div className="min-h-screen bg-slate-950 text-white">
+
+      {/* Glow background */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-purple-600/20 blur-[120px] rounded-full pointer-events-none"></div>
+
+      <div className="relative max-w-7xl mx-auto px-6 py-10">
+
+        {/* Header */}
+        <div className="mb-10">
+          <h1 className="text-4xl font-bold">My Listings</h1>
+          <p className="text-slate-400 mt-2">
+            Manage and track your auctions in real time
+          </p>
         </div>
 
+        {/* Empty */}
         {auctions.length === 0 ? (
           <EmptyState
             title="No listings yet"
-            description="Create your first auction to get started"
+            description="Create your first auction and start selling instantly"
             action={
-              <Button asChild>
+              <Button asChild className="bg-gradient-to-r from-purple-500 to-indigo-500">
                 <Link to="/seller/create">Create Auction</Link>
               </Button>
             }
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
             {auctions.map((auction) => (
-              <Card key={auction._id} className="flex flex-col h-full hover:shadow-md transition-shadow duration-200">
-                <CardContent className="flex-1 p-5">
-                  {/* Status badge */}
-                  <div className="flex items-center justify-between mb-3">
-                    <AuctionStatusBadge status={auction.status} endTime={auction.endTime} />
-                    <span className="text-xs text-muted-foreground">
+              <Card
+                key={auction._id}
+                className="bg-white/5 border border-white/10 backdrop-blur-xl text-white hover:scale-[1.02] hover:border-purple-500/50 transition-all duration-300"
+              >
+                <CardContent className="p-5 flex flex-col h-full">
+
+                  {/* Top */}
+                  <div className="flex justify-between items-start mb-3">
+                    <AuctionStatusBadge
+                      status={auction.status}
+                      endTime={auction.endTime}
+                    />
+
+                    <span className="text-xs text-slate-400">
                       {new Date(auction.endTime).toLocaleDateString()}
                     </span>
                   </div>
 
                   {/* Title */}
-                  <h3 className="font-semibold text-foreground text-base leading-snug mb-2 line-clamp-2">
+                  <h3 className="text-lg font-semibold mb-2 line-clamp-2">
                     {auction.title}
                   </h3>
 
                   {/* Description */}
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                  <p className="text-sm text-slate-400 line-clamp-2 mb-4">
                     {auction.description}
                   </p>
 
-                  {/* Price */}
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-sm text-muted-foreground">Current Bid:</span>
-                    <div className="font-bold">
-                      <PriceDisplay amount={auction.currentBid || auction.startingPrice} />
+                  {/* Price Box */}
+                  <div className="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/10 mb-5">
+                    <span className="text-sm text-slate-400">Current Bid</span>
+                    <div className="text-purple-300 font-bold">
+                      <PriceDisplay
+                        amount={auction.currentBid || auction.startingPrice}
+                      />
                     </div>
                   </div>
 
                   {/* Actions */}
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" asChild>
+                  <div className="mt-auto flex gap-2">
+
+                    <Button
+                      asChild
+                      size="sm"
+                      className="flex-1 bg-white/10 border border-white/10 hover:bg-white/20 hover:border-purple-500/50 transition"
+                    >
                       <Link to={`/seller/listings/${auction._id}/edit`}>
                         Edit
                       </Link>
                     </Button>
-                    <Button variant="outline" size="sm" asChild>
+
+                    <Button
+                      asChild
+                      size="sm"
+                      className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-500 hover:scale-105 transition"
+                    >
                       <Link to={`/auctions/${auction._id}`}>
                         View
                       </Link>
                     </Button>
+
                   </div>
+
                 </CardContent>
               </Card>
             ))}
+
           </div>
         )}
       </div>

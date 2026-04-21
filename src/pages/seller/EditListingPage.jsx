@@ -4,30 +4,24 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useParams, useNavigate } from "react-router-dom";
 import { getAuctionById, updateAuction } from "@/api/auction.api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import toast from "react-hot-toast";
-
-const auctionSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters").max(100, "Title must be less than 100 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters").max(1000, "Description must be less than 1000 characters"),
-  startingPrice: z.number().min(1, "Starting price must be at least ৳1"),
-  startTime: z.string().min(1, "Start time is required"),
-  endTime: z.string().min(1, "End time is required"),
-  category: z.string().min(1, "Category is required"),
-}).refine((data) => {
-  const startTime = new Date(data.startTime);
-  const endTime = new Date(data.endTime);
-  // Only validate that endTime is after startTime
-  return endTime > startTime;
-}, {
-  message: "End time must be after start time",
-  path: ["endTime"],
-});
 
 const categories = [
   "Electronics",
@@ -38,17 +32,16 @@ const categories = [
   "Toys & Games",
   "Business & Industrial",
   "Health & Beauty",
-  "Other"
+  "Other",
 ];
 
 export default function EditListingPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [auction, setAuction] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Set page title
   useEffect(() => {
     document.title = "Edit Auction - BidZen";
   }, []);
@@ -59,242 +52,193 @@ export default function EditListingPage() {
     formState: { errors },
     setValue,
     watch,
-  } = useForm({
-    resolver: zodResolver(auctionSchema),
-  });
+  } = useForm();
 
   useEffect(() => {
-    const fetchAuction = async () => {
+    const load = async () => {
       try {
-        setLoading(true);
-        const response = await getAuctionById(id);
-        const auctionData = response.data;
+        const res = await getAuctionById(id);
+        const a = res.data;
 
-        if (auctionData.status !== 'scheduled') {
-          toast.error("Only scheduled auctions can be edited");
-          navigate("/seller/dashboard");
-          return;
-        }
+        setValue("title", a.title);
+        setValue("description", a.description);
+        setValue("startingPrice", a.startingPrice);
+        setValue("category", a.category);
 
-        setAuction(auctionData);
-
-        // Pre-fill form with auction data
-        setValue("title", auctionData.title);
-        setValue("description", auctionData.description);
-        setValue("startingPrice", auctionData.startingPrice);
-        setValue("category", auctionData.category || "");
-
-        // Format startTime and endTime for datetime-local input
-        const startTime = new Date(auctionData.startTime);
-        const endTime = new Date(auctionData.endTime);
-        setValue("startTime", startTime.toISOString().slice(0, 16));
-        setValue("endTime", endTime.toISOString().slice(0, 16));
-      } catch (error) {
-        toast.error(error.response?.data?.message || "Failed to fetch auction");
-        navigate("/seller/dashboard");
+        setValue("startTime", a.startTime?.slice(0, 16));
+        setValue("endTime", a.endTime?.slice(0, 16));
+      } catch {
+        toast.error("Failed to load auction");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAuction();
-  }, [id, navigate, setValue]);
+    load();
+  }, [id]);
 
   const onSubmit = async (data) => {
     try {
       setIsSubmitting(true);
 
-      // Convert dates to proper format and update auction
-      const auctionData = {
-        title: data.title,
-        description: data.description,
-        startingPrice: data.startingPrice,
+      const payload = {
+        ...data,
         startTime: new Date(data.startTime).toISOString(),
         endTime: new Date(data.endTime).toISOString(),
-        category: data.category,
       };
 
-      console.log('Updating auction with data:', auctionData);
-      const response = await updateAuction(id, auctionData);
-      console.log('Update auction response:', response);
+      const res = await updateAuction(id, payload);
 
-      // Handle API response according to specification
-      if (response.data?.success) {
-        toast.success("Auction updated successfully!");
+      if (res.data?.success) {
+        toast.success("Auction updated successfully 🚀");
         navigate("/seller/dashboard");
       } else {
-        const message = response.data?.message || "Failed to update auction";
-        toast.error(message);
+        toast.error("Update failed");
       }
-    } catch (error) {
-      console.error("Auction update error:", error);
-      const message = error.response?.data?.message || "Failed to update auction";
-      toast.error(message);
+    } catch (err) {
+      toast.error("Something went wrong");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const getMinDateTime = () => {
-    const now = new Date();
-    now.setHours(now.getHours() + 1); // Minimum 1 hour from now
-    return now.toISOString().slice(0, 16);
-  };
-
-  const getMaxDateTime = () => {
-    const now = new Date();
-    now.setDate(now.getDate() + 30); // Maximum 30 days from now
-    return now.toISOString().slice(0, 16);
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <p className="mt-4 text-muted-foreground">Loading auction details...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!auction) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-muted-foreground">Auction not found</p>
-        </div>
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+        Loading auction...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Edit Auction</h1>
-          <p className="text-muted-foreground">Update your auction listing details</p>
+    <div className="min-h-screen bg-slate-950 text-white relative overflow-hidden">
+
+      {/* Glow background */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-indigo-600/20 blur-[140px] rounded-full"></div>
+
+      <div className="max-w-3xl mx-auto px-6 py-14 relative">
+
+        {/* Header */}
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-bold">
+            Edit <span className="text-indigo-400">Auction</span>
+          </h1>
+          <p className="text-slate-400 mt-2">
+            Update your listing details easily
+          </p>
         </div>
 
-        <Card>
+        {/* Card */}
+        <Card className="bg-slate-900/60 border border-white/10 backdrop-blur-xl rounded-2xl shadow-2xl">
+
           <CardHeader>
-            <CardTitle>Edit Auction Details</CardTitle>
+            <CardTitle className="text-white">
+              Auction Information
+            </CardTitle>
           </CardHeader>
+
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Title *</Label>
-                  <Input
-                    id="title"
-                    placeholder="Enter auction title"
-                    {...register("title")}
-                  />
-                  {errors.title && (
-                    <p className="text-sm text-destructive">{errors.title.message}</p>
-                  )}
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="category">Category *</Label>
-                  <Select onValueChange={(value) => setValue("category", value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.category && (
-                    <p className="text-sm text-destructive">{errors.category.message}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">Description *</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Describe your item in detail"
-                  rows={4}
-                  {...register("description")}
+              {/* Title */}
+              <div>
+                <Label className="text-slate-300">Title</Label>
+                <Input
+                  {...register("title")}
+                  className="bg-slate-800 border-white/10 text-white mt-2"
                 />
-                {errors.description && (
-                  <p className="text-sm text-destructive">{errors.description.message}</p>
-                )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="startingPrice">Starting Price (৳) *</Label>
+              {/* Category */}
+              <div>
+                <Label className="text-slate-300">Category</Label>
+                <Select onValueChange={(v) => setValue("category", v)}>
+                  <SelectTrigger className="bg-slate-800 border-white/10 text-white mt-2">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Description */}
+              <div>
+                <Label className="text-slate-300">Description</Label>
+                <Textarea
+                  {...register("description")}
+                  className="bg-slate-800 border-white/10 text-white mt-2"
+                />
+              </div>
+
+              {/* Price + Dates */}
+              <div className="grid md:grid-cols-2 gap-4">
+
+                <div>
+                  <Label className="text-slate-300">Starting Price</Label>
                   <Input
-                    id="startingPrice"
                     type="number"
-                    min="1"
-                    placeholder="Enter starting price"
-                    {...register("startingPrice", { valueAsNumber: true })}
+                    {...register("startingPrice")}
+                    className="bg-slate-800 border-white/10 text-white mt-2"
                   />
-                  {errors.startingPrice && (
-                    <p className="text-sm text-destructive">{errors.startingPrice.message}</p>
-                  )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="startTime">Auction Start Time *</Label>
+                <div>
+                  <Label className="text-slate-300">Start Time</Label>
                   <Input
-                    id="startTime"
                     type="datetime-local"
                     {...register("startTime")}
+                    className="bg-slate-800 border-white/10 text-white mt-2"
                   />
-                  {errors.startTime && (
-                    <p className="text-sm text-destructive">{errors.startTime.message}</p>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    Select when the auction should start
-                  </p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="endTime">Auction End Time *</Label>
+                <div className="md:col-span-2">
+                  <Label className="text-slate-300">End Time</Label>
                   <Input
-                    id="endTime"
                     type="datetime-local"
-                    min={getMinDateTime()}
-                    max={getMaxDateTime()}
                     {...register("endTime")}
+                    className="bg-slate-800 border-white/10 text-white mt-2"
                   />
-                  {errors.endTime && (
-                    <p className="text-sm text-destructive">{errors.endTime.message}</p>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    Auction must end after start time
-                  </p>
                 </div>
+
               </div>
 
-              <div className="flex gap-4">
+              {/* Buttons */}
+              <div className="flex gap-4 pt-4">
+
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1"
+                  className="
+                    flex-1 bg-gradient-to-r from-indigo-600 to-purple-600
+                    hover:from-indigo-500 hover:to-purple-500
+                    shadow-lg hover:shadow-indigo-500/30 transition
+                  "
                 >
                   {isSubmitting ? "Updating..." : "Update Auction"}
                 </Button>
+
                 <Button
                   type="button"
-                  variant="outline"
                   onClick={() => navigate("/seller/dashboard")}
-                  className="flex-1"
+                  variant="outline"
+                  className="
+                    flex-1 border-white/10 text-white
+                    hover:bg-white/5 hover:border-indigo-500/50
+                  "
                 >
                   Cancel
                 </Button>
+
               </div>
+
             </form>
           </CardContent>
+
         </Card>
       </div>
     </div>
