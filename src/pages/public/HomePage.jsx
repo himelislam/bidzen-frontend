@@ -109,7 +109,7 @@ export default function HomePage() {
       </section>
 
       {/* FEATURED */}
-      <section className="py-24">
+      <section className="">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-14">
             <h2 className="text-4xl font-bold mb-3">Featured Auctions</h2>
@@ -124,7 +124,7 @@ export default function HomePage() {
 
       {/* CLOSING SOON */}
       {closingSoonAuctions.length > 0 && (
-        <section className="py-24 bg-slate-900">
+        <section className=" bg-slate-900">
           <div className="max-w-7xl mx-auto px-6">
 
             <div className="text-center mb-14">

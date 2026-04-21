@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { getAuctionById } from "@/api/auction.api";
 import { getBids } from "@/api/bid.api";
 import AuctionStatusBadge from "@/components/auction/AuctionStatusBadge";
@@ -14,195 +14,208 @@ import { usePolling } from "@/hooks/usePolling";
 import { POLLING_INTERVAL_DETAIL } from "@/utils/constants";
 import { setMetaTags, clearMetaTags } from "@/utils/seo";
 import { extractAuctionData, extractBidsData } from "@/api/apiHelpers";
+import { Button } from "@/components/ui/button";
 
 export default function AuctionDetailsPage() {
   const { id } = useParams();
   const { user, isBuyer } = useAuth();
+
   const [auction, setAuction] = useState(null);
   const [bids, setBids] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Set SEO meta tags when auction loads
   useEffect(() => {
     if (auction) {
-      const title = `${auction.title} - BidZen Auction`;
-      const description = auction.description
-        ? auction.description.substring(0, 160) + (auction.description.length > 160 ? '...' : '')
-        : `Join the bidding for ${auction.title} on BidZen. Current bid: ${auction.currentHighestBid || auction.startingPrice}.`;
-
-      setMetaTags(title, description);
+      setMetaTags(
+        `${auction.title} - BidZen Auction`,
+        auction.description?.substring(0, 160)
+      );
     }
-
-    return () => {
-      clearMetaTags();
-    };
+    return () => clearMetaTags();
   }, [auction]);
-  const [error, setError] = useState(null);
 
   const fetchAuctionDetails = async () => {
     try {
       setLoading(true);
       setError(null);
-      const [auctionResponse, bidsResponse] = await Promise.all([
+
+      const [auctionRes, bidsRes] = await Promise.all([
         getAuctionById(id),
-        getBids(id)
+        getBids(id),
       ]);
 
-      console.log("Bids API Response:", bidsResponse);
-      const extractedBids = extractBidsData(bidsResponse);
-      console.log("Extracted bids:", extractedBids);
-      console.log("Extracted bids type:", typeof extractedBids);
-      console.log("Extracted bids is array:", Array.isArray(extractedBids));
-
-      setAuction(extractAuctionData(auctionResponse));
-      setBids(extractedBids);
+      setAuction(extractAuctionData(auctionRes));
+      setBids(extractBidsData(bidsRes));
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to fetch auction details");
+      setError(err?.response?.data?.message || "Failed to load auction");
     } finally {
       setLoading(false);
     }
   };
 
-  // Poll for new bids every 15 seconds while auction is active
-  const isActive = auction?.status === 'active';
+  const isActive = auction?.status === "active";
   usePolling(fetchAuctionDetails, POLLING_INTERVAL_DETAIL, isActive);
 
-  // Initial fetch
   useEffect(() => {
     fetchAuctionDetails();
   }, [id]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <p className="mt-4 text-muted-foreground">Loading auction details...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
+        <div className="animate-spin h-10 w-10 border-2 border-white border-t-transparent rounded-full" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center text-destructive">
-          <p>{error}</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center text-red-400">
+        {error}
       </div>
     );
   }
 
   if (!auction) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-muted-foreground">Auction not found</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center text-slate-400">
+        Auction not found
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Auction Header */}
+    <div className="min-h-screen pt-20 bg-slate-950 text-white">
+
+      <div className="max-w-7xl mx-auto px-6 py-10">
+
+        {/* HEADER */}
         <div className="mb-8">
-          <div className="flex items-start justify-between mb-4">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+
             <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">
+              <h1 className="text-3xl md:text-4xl font-bold mb-2">
                 {auction.title}
               </h1>
-              <AuctionStatusBadge status={auction.status} endTime={auction.endTime} />
+
+              <AuctionStatusBadge status={auction.status} />
+
+              <p className="text-slate-400 mt-3 max-w-2xl">
+                {auction.description}
+              </p>
             </div>
+
             <div className="text-right">
-              <span className="text-sm text-muted-foreground">Seller:</span>
-              <p className="font-medium text-foreground">{auction.seller?.name}</p>
+              <p className="text-sm text-slate-400">Seller</p>
+              <p className="font-semibold">{auction.seller?.name}</p>
             </div>
+
           </div>
-
-          {/* Description */}
-          <p className="text-muted-foreground mb-6 leading-relaxed">
-            {auction.description}
-          </p>
-
-          {/* Pricing */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="bg-muted p-4 rounded-lg">
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">Starting Price</h3>
-              <PriceDisplay
-                amount={auction.startingPrice}
-                className="text-2xl font-bold text-foreground"
-              />
-            </div>
-            <div className="bg-primary/10 p-4 rounded-lg border-2 border-primary">
-              <h3 className="text-sm font-medium text-primary mb-2">Current Highest Bid</h3>
-              <PriceDisplay
-                amount={auction.currentHighestBid || auction.startingPrice}
-                className="text-3xl font-bold text-primary"
-              />
-            </div>
-          </div>
-
-          {/* Countdown */}
-          {isActive && (
-            <div className="bg-muted p-4 rounded-lg text-center">
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">Time Remaining</h3>
-              <CountdownTimer endTime={auction.endTime} />
-            </div>
-          )}
         </div>
 
-        {/* Bid Form - Only for buyers when auction is active */}
-        {isBuyer && isActive && (
-          <div className="mb-8">
-            <BidForm auction={auction} onBidSuccess={fetchAuctionDetails} />
-          </div>
-        )}
+        {/* MAIN GRID */}
+        <div className="grid lg:grid-cols-3 gap-8">
 
-        {/* Bid History */}
-        <div className="mb-8">
-          <BidHistory bids={bids} />
-        </div>
+          {/* LEFT CONTENT */}
+          <div className="lg:col-span-2 space-y-6">
 
-        {/* Winner Banner - When auction is closed and has winner */}
-        {auction.status === 'closed' && auction.winner && (
-          <div className="bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-200 dark:border-amber-800 p-6 rounded-lg text-center mb-8">
-            <div className="text-2xl mb-2"></div>
-            <h2 className="text-xl font-bold text-amber-800 dark:text-amber-200">
-              Winner: {auction.winner.name}
-            </h2>
-            <p className="text-amber-700 dark:text-amber-300">
-              Winning bid: <PriceDisplay amount={auction.currentHighestBid} />
-            </p>
-            {/* Leave Feedback Button - Only for winner */}
-            {user?.role === 'buyer' && auction.winner._id === user?._id && (
-              <div className="mt-4">
-                <Button asChild>
-                  <Link to={`/auctions/${auction._id}/feedback`}>
-                    Leave Feedback
-                  </Link>
-                </Button>
+            {/* PRICING CARD */}
+            <div className="grid md:grid-cols-2 gap-4">
+
+              <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+                <p className="text-slate-400 text-sm">Starting Price</p>
+                <div className="text-2xl font-bold mt-2">
+                  <PriceDisplay amount={auction.startingPrice} />
+                </div>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-purple-900/20 border border-purple-500/30">
+                <p className="text-purple-300 text-sm">Current Bid</p>
+                <div className="text-3xl font-bold text-purple-300 mt-2">
+                  <PriceDisplay
+                    amount={auction.currentHighestBid || auction.startingPrice}
+                  />
+                </div>
+              </div>
+
+            </div>
+
+            {/* COUNTDOWN */}
+            {isActive && (
+              <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 text-center">
+                <p className="text-slate-400 mb-2">Time Remaining</p>
+                <CountdownTimer endTime={auction.endTime} />
               </div>
             )}
-          </div>
-        )}
 
-        {/* Feedback Section - Only when auction is closed */}
-        {auction.status === 'closed' && (
-          <div className="space-y-8">
-            {/* Feedback Form - Only for winning buyer or listing seller */}
-            {(user?.role === 'buyer' || user?.role === 'seller') && (
-              <FeedbackForm
-                auctionId={auction._id}
-                onSubmitted={fetchAuctionDetails}
-              />
+            {/* BID HISTORY */}
+            <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+              <BidHistory bids={bids} />
+            </div>
+
+            {/* FEEDBACK */}
+            {auction.status === "closed" && (
+              <div className="space-y-6">
+                <FeedbackForm
+                  auctionId={auction._id}
+                  onSubmitted={fetchAuctionDetails}
+                />
+                <FeedbackList auctionId={auction._id} />
+              </div>
             )}
 
-            {/* Feedback List - Always show for closed auctions */}
-            <FeedbackList auctionId={auction._id} />
           </div>
-        )}
+
+          {/* RIGHT SIDEBAR (STICKY BID PANEL) */}
+          <div className="lg:col-span-1">
+
+            <div className="sticky top-6 space-y-6">
+
+              {/* BID FORM */}
+              {isBuyer && isActive && (
+                <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+                  <h3 className="text-lg font-semibold mb-4">Place Your Bid</h3>
+                  <BidForm
+                    auction={auction}
+                    onBidSuccess={fetchAuctionDetails}
+                  />
+                </div>
+              )}
+
+              {/* WINNER */}
+              {auction.status === "closed" && auction.winner && (
+                <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30">
+                  <h3 className="text-lg font-bold text-amber-300">
+                    🏆 Winner
+                  </h3>
+
+                  <p className="mt-2 font-semibold">
+                    {auction.winner.name}
+                  </p>
+
+                  <p className="text-sm text-slate-300 mt-2">
+                    Winning Bid:{" "}
+                    <PriceDisplay amount={auction.currentHighestBid} />
+                  </p>
+
+                  {user?.role === "buyer" &&
+                    auction.winner._id === user?._id && (
+                      <Button asChild className="mt-4 w-full">
+                        <Link to={`/auctions/${auction._id}/feedback`}>
+                          Leave Feedback
+                        </Link>
+                      </Button>
+                    )}
+                </div>
+              )}
+
+            </div>
+
+          </div>
+
+        </div>
+
       </div>
     </div>
   );

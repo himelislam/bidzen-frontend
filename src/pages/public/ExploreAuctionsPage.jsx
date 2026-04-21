@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { getAuctions } from "@/api/auction.api";
 import AuctionGrid from "@/components/auction/AuctionGrid";
 import EmptyState from "@/components/shared/EmptyState";
@@ -7,11 +7,11 @@ import { POLLING_INTERVAL_LIST } from "@/utils/constants";
 import { extractAuctionsData } from "@/api/apiHelpers";
 
 export default function ExploreAuctionsPage() {
-  // Set page title
   useEffect(() => {
     document.title = "Explore Auctions - BidZen";
   }, []);
-  const [auctions, setAuctions] = useState([]);
+
+  const [allAuctions, setAllAuctions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState(null);
@@ -20,62 +20,111 @@ export default function ExploreAuctionsPage() {
     try {
       setLoading(true);
       setError(null);
+
       const response = await getAuctions();
-      // Extract auctions from nested response structure
-      let filteredAuctions = extractAuctionsData(response);
+      const data = extractAuctionsData(response);
 
-      if (searchTerm) {
-        filteredAuctions = filteredAuctions.filter(auction =>
-          auction.title.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      }
-
-      setAuctions(filteredAuctions);
+      setAllAuctions(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to fetch auctions");
+      setError(err?.response?.data?.message || "Failed to fetch auctions");
     } finally {
       setLoading(false);
     }
   };
 
-  // Poll for new auctions every 30 seconds
   usePolling(fetchAuctions, POLLING_INTERVAL_LIST);
 
-  // Initial fetch
   useEffect(() => {
     fetchAuctions();
   }, []);
 
+  // Smart filtering (FAST + CLEAN)
+  const filteredAuctions = useMemo(() => {
+    if (!searchTerm) return allAuctions;
+
+    return allAuctions.filter((auction) =>
+      auction.title?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [allAuctions, searchTerm]);
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-4">
-            Explore Auctions
+    <div className="min-h-screen pt-20 bg-slate-950 text-white">
+
+      {/* HERO SECTION */}
+      <section className="relative py-16 bg-gradient-to-r from-indigo-700 via-purple-700 to-slate-900">
+
+        <div className="absolute inset-0 bg-black/30"></div>
+
+        <div className="relative max-w-7xl mx-auto px-6 text-center">
+
+          <h1 className="text-4xl md:text-5xl font-bold mb-3">
+            Explore Live Auctions
           </h1>
 
-          {/* Search */}
-          <div className="mb-6">
+          <p className="text-slate-200 mb-8">
+            Discover thousands of real-time bidding opportunities
+          </p>
+
+          {/* SEARCH BOX */}
+          <div className="max-w-2xl mx-auto">
             <input
               type="text"
-              placeholder="Search auctions..."
+              placeholder="Search auctions by title..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full max-w-md px-4 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+              className="w-full px-5 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-slate-300 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
           </div>
 
-          {/* Error */}
+        </div>
+      </section>
+
+      {/* CONTENT */}
+      <section className="py-16">
+
+        <div className="max-w-7xl mx-auto px-6">
+
+          {/* ERROR */}
           {error && (
-            <div className="bg-destructive/10 border border-destructive/20 text-destructive p-4 rounded-lg mb-6">
-              <p className="text-sm">{error}</p>
+            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300">
+              {error}
             </div>
           )}
+
+          {/* RESULTS HEADER */}
+          <div className="flex items-center justify-between mb-8">
+
+            <h2 className="text-2xl font-semibold">
+              {searchTerm ? "Search Results" : "All Auctions"}
+            </h2>
+
+            <p className="text-slate-400 text-sm">
+              {filteredAuctions.length} items found
+            </p>
+
+          </div>
+
+          {/* GRID CONTAINER */}
+          <div className="rounded-3xl bg-slate-900/40 border border-white/10 backdrop-blur-xl p-6">
+
+            {filteredAuctions.length === 0 && !loading ? (
+              <EmptyState
+                title="No Auctions Found"
+                description="Try searching with different keywords"
+              />
+            ) : (
+              <AuctionGrid
+                auctions={filteredAuctions}
+                loading={loading}
+              />
+            )}
+
+          </div>
+
         </div>
 
-        {/* Auction Grid */}
-        <AuctionGrid auctions={auctions} loading={loading} />
-      </div>
+      </section>
+
     </div>
   );
 }
