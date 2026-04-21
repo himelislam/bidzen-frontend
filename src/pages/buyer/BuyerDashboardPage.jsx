@@ -30,6 +30,7 @@ export default function BuyerDashboardPage() {
       setUserBids(bids);
 
       const totalBids = bids.length;
+
       const activeAuctions = bids.filter(
         (b) => b.auction?.status === "active"
       ).length;
@@ -56,7 +57,7 @@ export default function BuyerDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen  flex items-center justify-center bg-gradient-to-br from-background via-muted/10 to-background">
         <div className="text-center">
           <div className="h-10 w-10 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
@@ -66,14 +67,14 @@ export default function BuyerDashboardPage() {
   }
 
   const statCards = [
-    { label: "Total Bids", value: stats.totalBids },
-    { label: "Active Auctions", value: stats.activeAuctions },
-    { label: "Won Auctions", value: stats.wonAuctions },
+    { label: "Total Bids", value: stats.totalBids, color: "text-primary" },
+    { label: "Active Auctions", value: stats.activeAuctions, color: "text-green-500" },
+    { label: "Won Auctions", value: stats.wonAuctions, color: "text-emerald-500" },
   ];
 
   return (
-    <div className="min-h-screen pt-20 bg-background">
-      <div className="max-w-7xl mx-auto px-4 py-10">
+    <div className="min-h-screen pt-20 bg-gradient-to-br from-background via-muted/10 to-background">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
         {/* Header */}
         <div className="mb-10">
@@ -81,38 +82,41 @@ export default function BuyerDashboardPage() {
             Buyer Dashboard
           </h1>
           <p className="text-muted-foreground mt-2">
-            Welcome back, <span className="text-primary">{user?.name}</span>
+            Welcome back,{" "}
+            <span className="text-primary font-medium">{user?.name}</span>
           </p>
         </div>
 
-        {/* Stats */}
+        {/* STATS */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
 
           {statCards.map((item, i) => (
             <Card
               key={i}
-              className="border border-white/10 bg-background/60 backdrop-blur-xl hover:shadow-lg transition"
+              className="bg-background/60 backdrop-blur-xl border border-white/10 hover:border-primary/30 hover:shadow-xl transition-all"
             >
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm text-muted-foreground">
                   {item.label}
                 </CardTitle>
               </CardHeader>
+
               <CardContent>
-                <div className="text-3xl font-bold text-foreground">
+                <div className={`text-3xl font-bold ${item.color}`}>
                   {item.value}
                 </div>
               </CardContent>
             </Card>
           ))}
 
-          {/* Spent */}
-          <Card className="border border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 backdrop-blur-xl">
+          {/* TOTAL SPENT */}
+          <Card className="bg-background/60 backdrop-blur-xl border border-white/10 hover:border-cyan-400/40 transition-all">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground">
                 Total Spent
               </CardTitle>
             </CardHeader>
+
             <CardContent>
               <div className="text-3xl font-bold text-cyan-400">
                 <PriceDisplay amount={stats.totalSpent} />
@@ -121,14 +125,16 @@ export default function BuyerDashboardPage() {
           </Card>
         </div>
 
-        {/* Content */}
+        {/* CONTENT GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          {/* Bids */}
+          {/* BIDS LIST */}
           <div className="lg:col-span-2">
-            <Card className="border border-white/10 bg-background/60 backdrop-blur-xl">
+            <Card className="bg-background/60 backdrop-blur-xl border border-white/10">
               <CardHeader>
-                <CardTitle>Recent Bids</CardTitle>
+                <CardTitle className="text-foreground">
+                  Recent Bids
+                </CardTitle>
               </CardHeader>
 
               <CardContent className="space-y-3">
@@ -136,7 +142,7 @@ export default function BuyerDashboardPage() {
                 {userBids.length === 0 ? (
                   <EmptyState
                     title="No bids yet"
-                    description="Start bidding on auctions"
+                    description="Start bidding on auctions to see activity here"
                     action={
                       <Button asChild>
                         <Link to="/auctions">Browse Auctions</Link>
@@ -147,12 +153,12 @@ export default function BuyerDashboardPage() {
                   userBids.slice(0, 6).map((bid) => (
                     <div
                       key={bid._id}
-                      className="flex items-center justify-between p-4 rounded-xl border border-white/5 bg-background/40 hover:border-cyan-500/30 transition"
+                      className="flex items-center justify-between p-4 rounded-xl border border-white/5 bg-background/40 hover:border-primary/30 transition"
                     >
                       <div>
                         <Link
                           to={`/auctions/${bid.auction._id}`}
-                          className="font-medium hover:text-primary transition"
+                          className="font-medium text-foreground hover:text-primary transition"
                         >
                           {bid.auction.title}
                         </Link>
@@ -178,17 +184,19 @@ export default function BuyerDashboardPage() {
             </Card>
           </div>
 
-          {/* Actions */}
+          {/* ACTIONS */}
           <div>
-            <Card className="border border-white/10 bg-background/60 backdrop-blur-xl">
+            <Card className="bg-background/60 backdrop-blur-xl border border-white/10">
               <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
+                <CardTitle className="text-foreground">
+                  Quick Actions
+                </CardTitle>
               </CardHeader>
 
               <CardContent className="space-y-3">
                 <Button
                   asChild
-                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90"
+                  className="w-full bg-gradient-to-r from-primary to-cyan-500 hover:opacity-90"
                 >
                   <Link to="/auctions">Browse Auctions</Link>
                 </Button>
