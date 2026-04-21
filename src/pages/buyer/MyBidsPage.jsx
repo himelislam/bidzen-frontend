@@ -1,120 +1,160 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getUserBids } from "@/api/user.api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import PriceDisplay from "@/components/shared/PriceDisplay";
 import AuctionStatusBadge from "@/components/auction/AuctionStatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
-import { extractBidsData } from "@/api/apiHelpers";
+import toast from "react-hot-toast";
 
 export default function MyBidsPage() {
   const [userBids, setUserBids] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Set page title
   useEffect(() => {
     document.title = "My Bids - BidZen";
   }, []);
 
   useEffect(() => {
-    const fetchUserBids = async () => {
+    const fetchBids = async () => {
       try {
         setLoading(true);
-        // Use dedicated user API for efficient data fetching
-        const response = await getUserBids();
-        console.log('MyBidsPage - getUserBids response:', response);
-        const userBids = response.data || [];
-        console.log('MyBidsPage - extracted bids:', userBids);
-        setUserBids(userBids.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-      } catch (error) {
-        console.error("Failed to fetch user bids:", error);
+        const res = await getUserBids();
+        const bids = res.data || [];
+
+        setUserBids(
+          bids.sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          )
+        );
+      } catch (err) {
+        toast.error("Failed to load bids");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUserBids();
+    fetchBids();
   }, []);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <p className="mt-4 text-muted-foreground">Loading your bids...</p>
-        </div>
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+        <div className="animate-spin h-10 w-10 border-2 border-purple-500 border-t-transparent rounded-full"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">My Bids</h1>
-          <p className="text-muted-foreground">View your bidding history and track your active auctions</p>
+    <div className="min-h-screen pt-20 bg-slate-950 text-white">
+
+      {/* Glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-purple-600/20 blur-[140px] rounded-full pointer-events-none"></div>
+
+      <div className="relative max-w-6xl mx-auto px-6 py-10">
+
+        {/* Header */}
+        <div className="mb-10">
+          <h1 className="text-4xl font-bold">My Bids</h1>
+          <p className="text-slate-400 mt-2">
+            Track all your bidding activity in real-time
+          </p>
         </div>
 
+        {/* Empty */}
         {userBids.length === 0 ? (
           <EmptyState
             title="No bids yet"
-            description="Start bidding on auctions to see your bidding history here"
+            description="Start bidding on auctions to see activity here"
           />
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-5">
+
             {userBids.map((bid) => (
-              <Card key={`${bid.auction._id}-${bid._id}`} className="hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
+              <Card
+                key={`${bid.auction._id}-${bid._id}`}
+                className="bg-white/5 border border-white/10 backdrop-blur-xl text-white hover:border-purple-500/40 transition hover:scale-[1.01]"
+              >
+                <CardHeader className="pb-3">
+
+                  <div className="flex justify-between items-start">
+
+                    {/* Left */}
                     <div>
-                      <CardTitle className="text-lg mb-2">
-                        <Link
-                          to={`/auctions/${bid.auction._id}`}
-                          className="hover:text-primary transition-colors"
-                        >
-                          {bid.auction.title}
-                        </Link>
-                      </CardTitle>
-                      <div className="flex items-center gap-2">
+                      <Link
+                        to={`/auctions/${bid.auction._id}`}
+                        className="text-lg font-semibold hover:text-purple-300 transition"
+                      >
+                        {bid.auction.title}
+                      </Link>
+
+                      <div className="flex items-center gap-3 mt-2">
                         <AuctionStatusBadge
                           status={bid.auction.status}
                           endTime={bid.auction.endTime}
                         />
-                        <span className="text-sm text-muted-foreground">
-                          Placed on {new Date(bid.createdAt).toLocaleDateString()}
+
+                        <span className="text-xs text-slate-400">
+                          {new Date(bid.createdAt).toLocaleDateString()}
                         </span>
                       </div>
                     </div>
+
+                    {/* Right (Your Bid) */}
                     <div className="text-right">
-                      <div className="text-sm text-muted-foreground mb-1">Your Bid</div>
-                      <PriceDisplay
-                        amount={bid.amount}
-                        className="text-lg font-bold text-primary"
-                      />
+                      <p className="text-xs text-slate-400">Your Bid</p>
+                      <div className="text-xl font-bold text-purple-300">
+                        <PriceDisplay amount={bid.amount} />
+                      </div>
                     </div>
+
                   </div>
+
                 </CardHeader>
+
                 <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <div className="text-sm text-muted-foreground">
-                        Starting Price: <PriceDisplay amount={bid.auction.startingPrice} />
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Current Highest: <PriceDisplay amount={bid.auction.currentHighestBid || bid.auction.startingPrice} />
-                      </div>
+
+                  <div className="flex justify-between items-center">
+
+                    {/* Price Info */}
+                    <div className="text-sm text-slate-400 space-y-1">
+                      <p>
+                        Starting:{" "}
+                        <PriceDisplay amount={bid.auction.startingPrice} />
+                      </p>
+
+                      <p>
+                        Highest:{" "}
+                        <PriceDisplay
+                          amount={
+                            bid.auction.currentHighestBid ||
+                            bid.auction.startingPrice
+                          }
+                        />
+                      </p>
                     </div>
-                    <Button asChild variant="outline" size="sm">
-                      <Link to={`/auctions/${bid.auction._id}`}>View Auction</Link>
+
+                    {/* Action */}
+                    <Button
+                      asChild
+                      size="sm"
+                      className="bg-white/10 border border-white/10 hover:bg-white/20 hover:border-purple-500/50 transition"
+                    >
+                      <Link to={`/auctions/${bid.auction._id}`}>
+                        View Auction
+                      </Link>
                     </Button>
+
                   </div>
+
                 </CardContent>
               </Card>
             ))}
+
           </div>
         )}
+
       </div>
     </div>
   );

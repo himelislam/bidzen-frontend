@@ -6,29 +6,40 @@ import { useNavigate, useParams } from "react-router-dom";
 import { getAuctionById } from "@/api/auction.api";
 import { submitFeedback } from "@/api/feedback.api";
 import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import toast from "react-hot-toast";
 import { extractAuctionData } from "@/api/apiHelpers";
 
 const feedbackSchema = z.object({
-  rating: z.number().min(1, "Please select a rating").max(5, "Rating must be between 1-5"),
-  comment: z.string().min(10, "Feedback must be at least 10 characters").max(500, "Feedback must be less than 500 characters"),
-  wouldRecommend: z.string().min(1, "Please select an option"),
+  rating: z.number().min(1).max(5),
+  comment: z.string().min(10).max(500),
+  wouldRecommend: z.string().min(1),
 });
 
 export default function FeedbackFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
   const [auction, setAuction] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Set page title
   useEffect(() => {
     document.title = "Leave Feedback - BidZen";
   }, []);
@@ -38,7 +49,6 @@ export default function FeedbackFormPage() {
     handleSubmit,
     formState: { errors },
     setValue,
-    watch,
   } = useForm({
     resolver: zodResolver(feedbackSchema),
     defaultValues: {
@@ -52,49 +62,46 @@ export default function FeedbackFormPage() {
     const fetchAuction = async () => {
       try {
         setLoading(true);
-        const response = await getAuctionById(id);
-        const auctionData = extractAuctionData(response);
+        const res = await getAuctionById(id);
+        const data = extractAuctionData(res);
 
-        // Only allow feedback for closed auctions where user was winner
-        if (!auctionData || auctionData.status !== 'closed') {
-          toast.error("Feedback can only be left for completed auctions");
-          navigate("/auctions/" + id);
+        if (!data || data.status !== "closed") {
+          toast.error("Feedback only for completed auctions");
+          navigate(`/auctions/${id}`);
           return;
         }
 
-        // Verify user is actually the winner of this auction
-        if (auctionData.winner !== user?._id) {
-          toast.error("Only the auction winner can leave feedback");
-          navigate("/auctions/" + id);
+        if (data.winner !== user?._id) {
+          toast.error("Only winner can leave feedback");
+          navigate(`/auctions/${id}`);
           return;
         }
 
-        setAuction(auctionData);
-      } catch (error) {
-        toast.error(error.response?.data?.message || "Failed to fetch auction");
-        navigate("/auctions/" + id);
+        setAuction(data);
+      } catch (err) {
+        toast.error("Failed to load auction");
+        navigate(`/auctions/${id}`);
       } finally {
         setLoading(false);
       }
     };
 
     fetchAuction();
-  }, [id, navigate]);
+  }, [id, navigate, user]);
 
   const onSubmit = async (data) => {
     try {
       setIsSubmitting(true);
 
-      // Call API to submit feedback
       await submitFeedback(id, {
         rating: data.rating,
-        reviewText: data.comment
+        reviewText: data.comment,
       });
 
       toast.success("Feedback submitted successfully!");
       navigate("/buyer/bids");
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to submit feedback");
+    } catch (err) {
+      toast.error("Failed to submit feedback");
     } finally {
       setIsSubmitting(false);
     }
@@ -102,132 +109,123 @@ export default function FeedbackFormPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen pt-20 flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-background">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <p className="mt-4 text-muted-foreground">Loading auction details...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!auction) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-muted-foreground">Auction not found</p>
+          <div className="animate-spin h-10 w-10 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading auction...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Leave Feedback</h1>
-          <p className="text-muted-foreground">Share your experience with this auction</p>
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
+      <div className="max-w-3xl mx-auto px-4 py-10">
+
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold text-foreground">
+            Leave Feedback
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Share your experience and help others
+          </p>
         </div>
 
-        {/* Auction Info */}
-        <Card className="mb-6">
+        {/* Auction Card */}
+        <Card className="mb-6 border border-white/10 bg-background/60 backdrop-blur-xl shadow-xl">
           <CardHeader>
-            <CardTitle>Auction Details</CardTitle>
+            <CardTitle className="text-lg">Auction Summary</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div>
-                <span className="font-medium">Item:</span> {auction.title}
-              </div>
-              <div>
-                <span className="font-medium">Seller:</span> {auction.seller?.name}
-              </div>
-              <div>
-                <span className="font-medium">Final Price:</span> ৳{auction.currentHighestBid}
-              </div>
-            </div>
+          <CardContent className="space-y-2 text-sm text-muted-foreground">
+            <p><span className="text-foreground font-medium">Item:</span> {auction.title}</p>
+            <p><span className="text-foreground font-medium">Seller:</span> {auction.seller?.name}</p>
+            <p><span className="text-foreground font-medium">Final Price:</span> ৳{auction.currentHighestBid}</p>
           </CardContent>
         </Card>
 
-        {/* Feedback Form */}
-        <Card>
+        {/* Form */}
+        <Card className="border border-white/10 bg-background/60 backdrop-blur-xl shadow-2xl">
           <CardHeader>
             <CardTitle>Your Feedback</CardTitle>
           </CardHeader>
+
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="rating">Rating *</Label>
-                <Select onValueChange={(value) => setValue("rating", parseInt(value))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select rating" />
+
+              {/* Rating */}
+              <div>
+                <Label>Rating *</Label>
+                <Select onValueChange={(v) => setValue("rating", Number(v))}>
+                  <SelectTrigger className="mt-2">
+                    <SelectValue placeholder="Choose rating" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">1 - Very Poor</SelectItem>
-                    <SelectItem value="2">2 - Poor</SelectItem>
-                    <SelectItem value="3">3 - Average</SelectItem>
-                    <SelectItem value="4">4 - Good</SelectItem>
-                    <SelectItem value="5">5 - Excellent</SelectItem>
+                    {[1, 2, 3, 4, 5].map((r) => (
+                      <SelectItem key={r} value={String(r)}>
+                        {"⭐".repeat(r)} ({r})
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 {errors.rating && (
-                  <p className="text-sm text-destructive">{errors.rating.message}</p>
+                  <p className="text-xs text-red-500 mt-1">{errors.rating.message}</p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="wouldRecommend">Would you recommend this seller? *</Label>
-                <Select onValueChange={(value) => setValue("wouldRecommend", value)}>
-                  <SelectTrigger>
+              {/* Recommend */}
+              <div>
+                <Label>Would you recommend?</Label>
+                <Select onValueChange={(v) => setValue("wouldRecommend", v)}>
+                  <SelectTrigger className="mt-2">
                     <SelectValue placeholder="Select option" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="yes">Yes</SelectItem>
-                    <SelectItem value="no">No</SelectItem>
-                    <SelectItem value="maybe">Maybe</SelectItem>
+                    <SelectItem value="yes">Yes 👍</SelectItem>
+                    <SelectItem value="no">No 👎</SelectItem>
+                    <SelectItem value="maybe">Maybe 🤔</SelectItem>
                   </SelectContent>
                 </Select>
-                {errors.wouldRecommend && (
-                  <p className="text-sm text-destructive">{errors.wouldRecommend.message}</p>
-                )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="comment">Feedback *</Label>
+              {/* Comment */}
+              <div>
+                <Label>Feedback *</Label>
                 <Textarea
-                  id="comment"
-                  placeholder="Share your experience with this auction and seller..."
-                  rows={4}
                   {...register("comment")}
+                  className="mt-2"
+                  placeholder="Write your experience..."
+                  rows={5}
                 />
                 {errors.comment && (
-                  <p className="text-sm text-destructive">{errors.comment.message}</p>
+                  <p className="text-xs text-red-500 mt-1">{errors.comment.message}</p>
                 )}
-                <p className="text-xs text-muted-foreground">
-                  Your feedback helps other buyers make informed decisions
-                </p>
               </div>
 
-              <div className="flex gap-4">
+              {/* Buttons */}
+              <div className="flex gap-3 pt-2">
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1"
+                  className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90 transition"
                 >
                   {isSubmitting ? "Submitting..." : "Submit Feedback"}
                 </Button>
+
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => navigate("/buyer/bids")}
-                  className="flex-1"
+                  className="flex-1 border-white/10 hover:bg-white/5"
                 >
                   Cancel
                 </Button>
               </div>
+
             </form>
           </CardContent>
         </Card>
+
       </div>
     </div>
   );
