@@ -13,6 +13,7 @@ export default function BuyerDashboardPage() {
   const { user } = useAuth();
   const [userBids, setUserBids] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const [stats, setStats] = useState({
     totalBids: 0,
     activeAuctions: 0,
@@ -55,21 +56,27 @@ export default function BuyerDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/20 to-background">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="animate-spin h-10 w-10 border-2 border-primary border-t-transparent rounded-full mx-auto"></div>
+          <div className="h-10 w-10 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
         </div>
       </div>
     );
   }
 
+  const statCards = [
+    { label: "Total Bids", value: stats.totalBids },
+    { label: "Active Auctions", value: stats.activeAuctions },
+    { label: "Won Auctions", value: stats.wonAuctions },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background">
+    <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-10">
 
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-10">
           <h1 className="text-4xl font-bold text-foreground">
             Buyer Dashboard
           </h1>
@@ -78,14 +85,10 @@ export default function BuyerDashboardPage() {
           </p>
         </div>
 
-        {/* STATS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
 
-          {[
-            { label: "Total Bids", value: stats.totalBids },
-            { label: "Active Auctions", value: stats.activeAuctions },
-            { label: "Won Auctions", value: stats.wonAuctions },
-          ].map((item, i) => (
+          {statCards.map((item, i) => (
             <Card
               key={i}
               className="border border-white/10 bg-background/60 backdrop-blur-xl hover:shadow-lg transition"
@@ -103,7 +106,7 @@ export default function BuyerDashboardPage() {
             </Card>
           ))}
 
-          {/* Total Spent */}
+          {/* Spent */}
           <Card className="border border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 backdrop-blur-xl">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-muted-foreground">
@@ -116,10 +119,9 @@ export default function BuyerDashboardPage() {
               </div>
             </CardContent>
           </Card>
-
         </div>
 
-        {/* CONTENT */}
+        {/* Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
           {/* Bids */}
@@ -145,7 +147,7 @@ export default function BuyerDashboardPage() {
                   userBids.slice(0, 6).map((bid) => (
                     <div
                       key={bid._id}
-                      className="flex items-center justify-between p-4 rounded-lg border border-white/5 hover:border-cyan-500/30 transition bg-background/40"
+                      className="flex items-center justify-between p-4 rounded-xl border border-white/5 bg-background/40 hover:border-cyan-500/30 transition"
                     >
                       <div>
                         <Link
@@ -184,11 +186,18 @@ export default function BuyerDashboardPage() {
               </CardHeader>
 
               <CardContent className="space-y-3">
-                <Button asChild className="w-full bg-gradient-to-r from-cyan-500 to-blue-600">
+                <Button
+                  asChild
+                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90"
+                >
                   <Link to="/auctions">Browse Auctions</Link>
                 </Button>
 
-                <Button variant="outline" asChild className="w-full border-white/10 hover:bg-white/5">
+                <Button
+                  variant="outline"
+                  asChild
+                  className="w-full border-white/10 hover:bg-white/5"
+                >
                   <Link to="/my-bids">My Bids</Link>
                 </Button>
               </CardContent>
