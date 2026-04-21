@@ -181,7 +181,7 @@ export default function BuyerDashboardPage() {
               <Button
                 variant="outline"
                 asChild
-                className="w-full border-white/10 hover:bg-white/5 text-white"
+                className="w-full border-white/10 hover:bg-white/5 text-black"
               >
                 <Link to="/my-bids">My Bids</Link>
               </Button>
