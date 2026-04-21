@@ -72,7 +72,7 @@ export default function BuyerDashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen pt-20 bg-background">
       <div className="max-w-7xl mx-auto px-4 py-10">
 
         {/* Header */}
