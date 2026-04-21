@@ -183,7 +183,7 @@ export default function BuyerDashboardPage() {
                 asChild
                 className="w-full border-white/10 hover:bg-white/5 text-black"
               >
-                <Link to="/my-bids">My Bids</Link>
+                <Link to="/my-bids" className="text-black">My Bids</Link>
               </Button>
 
             </div>
