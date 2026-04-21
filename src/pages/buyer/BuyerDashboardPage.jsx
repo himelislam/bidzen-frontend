@@ -30,7 +30,6 @@ export default function BuyerDashboardPage() {
       setUserBids(bids);
 
       const totalBids = bids.length;
-
       const activeAuctions = bids.filter(
         (b) => b.auction?.status === "active"
       ).length;
@@ -57,108 +56,87 @@ export default function BuyerDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen  flex items-center justify-center bg-gradient-to-br from-background via-muted/10 to-background">
-        <div className="text-center">
-          <div className="h-10 w-10 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
-        </div>
+      <div className="min-h-screen pt-20 bg-slate-950 flex items-center justify-center text-white">
+        <div className="animate-spin h-10 w-10 border-2 border-cyan-500 border-t-transparent rounded-full"></div>
       </div>
     );
   }
 
   const statCards = [
-    { label: "Total Bids", value: stats.totalBids, color: "text-primary" },
-    { label: "Active Auctions", value: stats.activeAuctions, color: "text-green-500" },
-    { label: "Won Auctions", value: stats.wonAuctions, color: "text-emerald-500" },
+    { label: "Total Bids", value: stats.totalBids, color: "text-white" },
+    { label: "Active Auctions", value: stats.activeAuctions, color: "text-green-400" },
+    { label: "Won Auctions", value: stats.wonAuctions, color: "text-emerald-400" },
   ];
 
   return (
-    <div className="min-h-screen pt-20 bg-gradient-to-br from-background via-muted/10 to-background">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="min-h-screen pt-20 bg-slate-950 text-white">
+
+      {/* Glow Background (same seller style) */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-cyan-500/20 blur-[140px] rounded-full pointer-events-none"></div>
+
+      <div className="relative max-w-7xl mx-auto px-6 py-10">
 
         {/* Header */}
         <div className="mb-10">
-          <h1 className="text-4xl font-bold text-foreground">
-            Buyer Dashboard
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Welcome back,{" "}
-            <span className="text-primary font-medium">{user?.name}</span>
+          <h1 className="text-4xl font-bold">Buyer Dashboard</h1>
+          <p className="text-slate-400 mt-1">
+            Welcome back{" "}
+            <span className="text-cyan-400 font-medium">{user?.name}</span>
           </p>
         </div>
 
-        {/* STATS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
 
           {statCards.map((item, i) => (
-            <Card
+            <div
               key={i}
-              className="bg-background/60 backdrop-blur-xl border border-white/10 hover:border-primary/30 hover:shadow-xl transition-all"
+              className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md hover:scale-[1.02] transition"
             >
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">
-                  {item.label}
-                </CardTitle>
-              </CardHeader>
-
-              <CardContent>
-                <div className={`text-3xl font-bold ${item.color}`}>
-                  {item.value}
-                </div>
-              </CardContent>
-            </Card>
+              <p className="text-sm text-slate-400">{item.label}</p>
+              <div className={`text-2xl font-bold ${item.color}`}>
+                {item.value}
+              </div>
+            </div>
           ))}
 
-          {/* TOTAL SPENT */}
-          <Card className="bg-background/60 backdrop-blur-xl border border-white/10 hover:border-cyan-400/40 transition-all">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">
-                Total Spent
-              </CardTitle>
-            </CardHeader>
+          {/* Total Spent */}
+          <div className="p-5 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 backdrop-blur-md">
+            <p className="text-sm text-slate-400">Total Spent</p>
+            <div className="text-2xl font-bold text-cyan-400">
+              <PriceDisplay amount={stats.totalSpent} />
+            </div>
+          </div>
 
-            <CardContent>
-              <div className="text-3xl font-bold text-cyan-400">
-                <PriceDisplay amount={stats.totalSpent} />
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
-        {/* CONTENT GRID */}
+        {/* Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          {/* BIDS LIST */}
+          {/* Bids */}
           <div className="lg:col-span-2">
-            <Card className="bg-background/60 backdrop-blur-xl border border-white/10">
-              <CardHeader>
-                <CardTitle className="text-foreground">
-                  Recent Bids
-                </CardTitle>
-              </CardHeader>
 
-              <CardContent className="space-y-3">
+            <h2 className="text-xl font-semibold mb-4">Recent Bids</h2>
 
-                {userBids.length === 0 ? (
-                  <EmptyState
-                    title="No bids yet"
-                    description="Start bidding on auctions to see activity here"
-                    action={
-                      <Button asChild>
-                        <Link to="/auctions">Browse Auctions</Link>
-                      </Button>
-                    }
-                  />
-                ) : (
-                  userBids.slice(0, 6).map((bid) => (
-                    <div
-                      key={bid._id}
-                      className="flex items-center justify-between p-4 rounded-xl border border-white/5 bg-background/40 hover:border-primary/30 transition"
-                    >
+            {userBids.length === 0 ? (
+              <EmptyState
+                title="No bids yet"
+                description="Start bidding on auctions"
+              />
+            ) : (
+              <div className="space-y-3">
+
+                {userBids.slice(0, 6).map((bid) => (
+                  <Card
+                    key={bid._id}
+                    className="bg-white/5 border border-white/10 backdrop-blur-xl hover:border-cyan-500/40 transition"
+                  >
+                    <CardContent className="flex justify-between items-center p-5">
+
                       <div>
                         <Link
                           to={`/auctions/${bid.auction._id}`}
-                          className="font-medium text-foreground hover:text-primary transition"
+                          className="font-medium hover:text-cyan-400 transition"
                         >
                           {bid.auction.title}
                         </Link>
@@ -169,47 +147,47 @@ export default function BuyerDashboardPage() {
                       </div>
 
                       <div className="text-right">
-                        <div className="font-bold text-primary">
+                        <div className="font-bold text-cyan-400">
                           <PriceDisplay amount={bid.amount} />
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-xs text-slate-400">
                           {new Date(bid.createdAt).toLocaleDateString()}
                         </div>
                       </div>
-                    </div>
-                  ))
-                )}
 
-              </CardContent>
-            </Card>
+                    </CardContent>
+                  </Card>
+                ))}
+
+              </div>
+            )}
+
           </div>
 
-          {/* ACTIONS */}
+          {/* Actions */}
           <div>
-            <Card className="bg-background/60 backdrop-blur-xl border border-white/10">
-              <CardHeader>
-                <CardTitle className="text-foreground">
-                  Quick Actions
-                </CardTitle>
-              </CardHeader>
 
-              <CardContent className="space-y-3">
-                <Button
-                  asChild
-                  className="w-full bg-gradient-to-r from-primary to-cyan-500 hover:opacity-90"
-                >
-                  <Link to="/auctions">Browse Auctions</Link>
-                </Button>
+            <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
 
-                <Button
-                  variant="outline"
-                  asChild
-                  className="w-full border-white/10 hover:bg-white/5"
-                >
-                  <Link to="/my-bids">My Bids</Link>
-                </Button>
-              </CardContent>
-            </Card>
+            <div className="space-y-3">
+
+              <Button
+                asChild
+                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90"
+              >
+                <Link to="/auctions">Browse Auctions</Link>
+              </Button>
+
+              <Button
+                variant="outline"
+                asChild
+                className="w-full border-white/10 hover:bg-white/5 text-white"
+              >
+                <Link to="/my-bids">My Bids</Link>
+              </Button>
+
+            </div>
+
           </div>
 
         </div>

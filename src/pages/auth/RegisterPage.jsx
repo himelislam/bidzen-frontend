@@ -51,14 +51,11 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen pt-20 bg-slate-950 flex items-center justify-center text-white px-4">
-
       {/* SAME glow as login page */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-cyan-500/20 blur-[140px] rounded-full pointer-events-none"></div>
 
       <div className="relative w-full max-w-md">
-
         <Card className="bg-white/5 border border-white/10 backdrop-blur-xl shadow-xl">
-
           <CardHeader className="text-center space-y-2">
             <CardTitle className="text-3xl font-bold text-white">
               Create Account
@@ -70,7 +67,6 @@ export default function RegisterPage() {
 
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-
               {/* Name */}
               <div>
                 <label className="text-sm text-slate-400">Name</label>
@@ -78,10 +74,12 @@ export default function RegisterPage() {
                   type="text"
                   placeholder="John Doe"
                   {...register("name")}
-                  className="w-full mt-1 px-3 py-2 rounded-lg bg-slate-900 border border-white/10 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none transition"
+                  className="w-full mt-1 px-3 py-2 rounded-lg bg-slate-900 border border-white/10 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none transition text-white"
                 />
                 {errors.name && (
-                  <p className="text-xs text-red-400 mt-1">{errors.name.message}</p>
+                  <p className="text-xs text-red-400 mt-1">
+                    {errors.name.message}
+                  </p>
                 )}
               </div>
 
@@ -92,10 +90,12 @@ export default function RegisterPage() {
                   type="email"
                   placeholder="you@example.com"
                   {...register("email")}
-                  className="w-full mt-1 px-3 py-2 rounded-lg bg-slate-900 border border-white/10 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none transition"
+                  className="w-full mt-1 px-3 py-2 rounded-lg bg-slate-900 border border-white/10 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none transition  text-white"
                 />
                 {errors.email && (
-                  <p className="text-xs text-red-400 mt-1">{errors.email.message}</p>
+                  <p className="text-xs text-red-400 mt-1">
+                    {errors.email.message}
+                  </p>
                 )}
               </div>
 
@@ -106,10 +106,12 @@ export default function RegisterPage() {
                   type="password"
                   placeholder="••••••••"
                   {...register("password")}
-                  className="w-full mt-1 px-3 py-2 rounded-lg bg-slate-900 border border-white/10 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none transition"
+                  className="w-full mt-1 px-3 py-2 rounded-lg bg-slate-900 border border-white/10 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 outline-none transition text-white"
                 />
                 {errors.password && (
-                  <p className="text-xs text-red-400 mt-1">{errors.password.message}</p>
+                  <p className="text-xs text-red-400 mt-1">
+                    {errors.password.message}
+                  </p>
                 )}
               </div>
 
@@ -118,7 +120,6 @@ export default function RegisterPage() {
                 <label className="text-sm text-slate-400">I want to</label>
 
                 <div className="space-y-2 mt-2">
-
                   <label className="flex items-center text-white gap-2 p-2 rounded-lg border border-white/10 bg-slate-900 hover:border-cyan-500/40 transition">
                     <input type="radio" value="buyer" {...register("role")} />
                     Buy items in auctions
@@ -128,11 +129,12 @@ export default function RegisterPage() {
                     <input type="radio" value="seller" {...register("role")} />
                     Sell items in auctions
                   </label>
-
                 </div>
 
                 {errors.role && (
-                  <p className="text-xs text-red-400 mt-1">{errors.role.message}</p>
+                  <p className="text-xs text-red-400 mt-1">
+                    {errors.role.message}
+                  </p>
                 )}
               </div>
 
@@ -144,7 +146,6 @@ export default function RegisterPage() {
               >
                 {isSubmitting ? "Creating account..." : "Create Account"}
               </Button>
-
             </form>
 
             <p className="text-center text-sm text-slate-400 mt-5">
@@ -153,9 +154,7 @@ export default function RegisterPage() {
                 Sign in
               </Link>
             </p>
-
           </CardContent>
-
         </Card>
       </div>
     </div>
