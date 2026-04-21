@@ -11,105 +11,75 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-background border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link to="/" className="text-xl font-bold text-primary">
-              BidZen
-            </Link>
+    <nav className="fixed top-0 left-0 w-full z-50 bg-slate-950/70 backdrop-blur-md border-b border-white/10">
+      <div className="w-full px-6 lg:px-12">
+        <div className="flex items-center justify-between h-16">
+
+          {/* Logo */}
+          <Link
+            to="/"
+            className="text-2xl font-extrabold text-white tracking-tight"
+          >
+            <span className="text-purple-400">Bid</span>Zen
+          </Link>
+
+          {/* Links */}
+          <div className="hidden md:flex items-center gap-6">
+
+            {isAuthenticated && (
+              <Link className="nav-item" to="/auctions">
+                Explore
+              </Link>
+            )}
+
+            {isAuthenticated && user?.role === "buyer" && (
+              <>
+                <Link className="nav-item" to="/buyer/dashboard">Dashboard</Link>
+                <Link className="nav-item" to="/my-bids">My Bids</Link>
+              </>
+            )}
+
+            {isAuthenticated && user?.role === "seller" && (
+              <>
+                <Link className="nav-item" to="/seller/dashboard">Dashboard</Link>
+                <Link className="nav-item" to="/seller/create">Create</Link>
+                <Link className="nav-item" to="/seller/listings">Listings</Link>
+              </>
+            )}
+
+            {isAuthenticated && user?.role === "admin" && (
+              <>
+                <Link className="nav-item" to="/admin/dashboard">Admin</Link>
+                <Link className="nav-item" to="/admin/users">Users</Link>
+              </>
+            )}
           </div>
 
-          <div className="flex items-center space-x-4">
+          {/* Right */}
+          <div className="flex items-center gap-3">
+
             {isAuthenticated ? (
               <>
-                <Link
-                  to="/auctions"
-                  className="text-muted-foreground hover:text-foreground"
+                <span className="hidden sm:block text-sm text-slate-300">
+                  {user?.name}
+                </span>
+
+                <button
+                  onClick={handleLogout}
+                  className="px-3 py-1.5 text-sm rounded-md border border-white/10
+                             text-slate-300 hover:text-red-400 hover:border-red-500
+                             transition"
                 >
-                  Explore
-                </Link>
-
-                {user?.role === "buyer" && (
-                  <>
-                    <Link
-                      to="/buyer/dashboard"
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      Dashboard
-                    </Link>
-                    <Link
-                      to="/my-bids"
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      My Bids
-                    </Link>
-                  </>
-                )}
-
-                {user?.role === "seller" && (
-                  <>
-                    <Link
-                      to="/seller/dashboard"
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      Dashboard
-                    </Link>
-                    <Link
-                      to="/seller/create"
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      Create Auction
-                    </Link>
-                    <Link
-                      to="/seller/listings"
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      My Listings
-                    </Link>
-                  </>
-                )}
-
-                {user?.role === "admin" && (
-                  <>
-                    <Link
-                      to="/admin/dashboard"
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      Dashboard
-                    </Link>
-                    <Link
-                      to="/admin/users"
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      Users
-                    </Link>
-                  </>
-                )}
-
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-muted-foreground">
-                    {user?.name}
-                  </span>
-                  <button
-                    onClick={handleLogout}
-                    className="text-sm text-muted-foreground hover:text-foreground"
-                  >
-                    Logout
-                  </button>
-                </div>
+                  Logout
+                </button>
               </>
             ) : (
               <>
-                <Link
-                  to="/login"
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  Login
-                </Link>
+                <Link className="nav-item" to="/login">Login</Link>
+
                 <Link
                   to="/register"
-                  className="bg-primary text-primary-foreground px-3 py-1 rounded-md text-sm hover:bg-primary/90"
+                  className="px-4 py-1.5 text-sm rounded-md bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg hover:opacity-90 transition"
                 >
                   Register
                 </Link>
@@ -118,6 +88,18 @@ export default function Navbar() {
           </div>
         </div>
       </div>
+
+      {/* styles */}
+      <style>{`
+        .nav-item {
+          font-size: 14px;
+          color: #cbd5e1;
+          transition: 0.2s;
+        }
+        .nav-item:hover {
+          color: #a78bfa;
+        }
+      `}</style>
     </nav>
   );
 }
