@@ -1,6 +1,6 @@
 # Bidzen - Online Auction Platform
 
-A comprehensive online auction platform that connects buyers and sellers in a secure, user-friendly environment. Bidzen enables users to create, bid on, and manage auctions with real-time updates, secure payments, and comprehensive user management.
+A comprehensive online auction platform that connects buyers and sellers in a secure, user-friendly environment. Bidzen enables users to create, bid on, and manage auctions with real-time updates and comprehensive user management.
 
 ## Table of Contents
 
@@ -24,7 +24,7 @@ Bidzen is a full-stack auction platform designed to modernize the traditional au
 
 - **Accessibility**: 24/7 access to auctions from anywhere
 - **Transparency**: Real-time bidding history and auction status
-- **Security**: Secure authentication and payment processing
+- **Security**: Secure authentication
 - **User Experience**: Intuitive interface with responsive design
 - **Scalability**: Built to handle high traffic and concurrent users
 
@@ -47,16 +47,15 @@ Bidzen addresses these issues by providing a modern, user-centric auction experi
 ## User Journey
 
 ### New User Registration
-1. **Sign Up**: Users create accounts with email verification
-2. **Profile Setup**: Complete personal information and preferences
-3. **Email Verification**: Confirm account via verification link
-4. **First Login**: Access dashboard and explore platform features
+1. **Sign Up**: Users create accounts with email.
+2. **Profile Setup**: Complete personal information
+3. **First Login**: Access dashboard and explore platform features
 
 ### Seller Journey
 1. **Create Auction**: List items with detailed descriptions, images, and pricing
 2. **Set Auction Parameters**: Choose start/end times, starting bid, and auction type
 3. **Manage Active Auctions**: Monitor bids, answer questions, and manage listings
-4. **Complete Transactions**: Handle payments, shipping, and feedback
+4. **Complete Transactions**: Handle payments and feedback
 5. **View Analytics**: Track sales performance and auction history
 
 ### Buyer Journey
@@ -79,7 +78,6 @@ Bidzen addresses these issues by providing a modern, user-centric auction experi
 - **User Registration**: Email-based signup with verification
 - **Secure Login**: JWT-based authentication with refresh tokens
 - **Role-Based Access**: Buyer, Seller, and Admin roles with specific permissions
-- **Password Management**: Secure password reset and change functionality
 
 ### Auction Management
 - **Create Listings**: Detailed item descriptions with image uploads
@@ -93,19 +91,12 @@ Bidzen addresses these issues by providing a modern, user-centric auction experi
 - **Bid History**: Complete bidding history transparency
 - **Automatic Notifications**: Email alerts for bid updates and auction endings
 - **Bid Validation**: Prevent invalid bids and ensure fair competition
-- **Watchlist**: Save favorite auctions for easy tracking
 
 ### User Dashboard
 - **Seller Dashboard**: Manage listings, track sales, view analytics
 - **Buyer Dashboard**: Track bids, view won auctions, manage payments
 - **Admin Dashboard**: Platform oversight and user management
 - **Profile Management**: Update personal information and preferences
-
-### Payment & Transactions
-- **Secure Payments**: Integration with payment gateways
-- **Transaction History**: Complete record of all financial activities
-- **Refund Management**: Handle refunds and disputes
-- **Payment Notifications**: Automated payment status updates
 
 ### Feedback & Ratings
 - **User Reviews**: Two-way feedback system
@@ -416,8 +407,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For support and questions:
 - Create an issue on GitHub
-- Email: support@bidzen.com
-- Documentation: [docs.bidzen.com](https://docs.bidzen.com)
+- Email: himel@dorik.io
 
 ## Acknowledgments
 
