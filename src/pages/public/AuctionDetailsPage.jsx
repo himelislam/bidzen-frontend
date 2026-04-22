@@ -151,10 +151,16 @@ export default function AuctionDetailsPage() {
             </div>
 
             {/* COUNTDOWN */}
-            {isActive && (
+            {(isActive || auction.status === "scheduled") && (
               <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 text-center">
-                <p className="text-slate-400 mb-2">Time Remaining</p>
-                <CountdownTimer endTime={auction.endTime} />
+                <p className="text-slate-400 mb-2">
+                  {auction.status === "scheduled" ? "Auction Starts In" : "Time Remaining"}
+                </p>
+                <CountdownTimer
+                  endTime={auction.endTime}
+                  startTime={auction.startTime}
+                  status={auction.status}
+                />
               </div>
             )}
 

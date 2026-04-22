@@ -86,10 +86,17 @@ export default function AuctionCard({ auction }) {
         </div>
 
         {/* Countdown */}
-        {isActive && (
+        {(isActive || auction.status === "scheduled") && (
           <div className="pt-3 border-t border-white/10 flex justify-between items-center">
-            <span className="text-xs text-slate-400">Time Left</span>
-            <CountdownTimer endTime={auction.endTime} />
+            <span className="text-xs text-slate-400">
+              {auction.status === "scheduled" ? "Starts In" : "Time Left"}
+            </span>
+            <CountdownTimer
+              endTime={auction.endTime}
+              startTime={auction.startTime}
+              status={auction.status}
+              showLabel={false}
+            />
           </div>
         )}
       </CardContent>
