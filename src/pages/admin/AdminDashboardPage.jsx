@@ -224,7 +224,7 @@ export default function AdminDashboardPage() {
             variant="outline"
             className="border-white/10 hover:bg-white/10"
           >
-            <Link to="/auctions">All Auctions</Link>
+            <Link to="/auctions" className="text-black">All Auctions</Link>
           </Button>
         </div>
 
