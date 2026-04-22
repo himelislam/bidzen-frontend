@@ -66,7 +66,7 @@ export default function FeedbackForm({ auctionId, onSubmitted }) {
           <Star
             className={`w-6 h-6 ${star <= (hoveredStar || selectedRating)
               ? "fill-yellow-400 text-yellow-400"
-              : "text-gray-300"
+              : "text-slate-600"
               }`}
           />
         </button>
@@ -75,37 +75,38 @@ export default function FeedbackForm({ auctionId, onSubmitted }) {
   );
 
   return (
-    <Card>
+    <Card className="bg-slate-800 border border-white/10">
       <CardHeader>
-        <CardTitle>Leave a Review</CardTitle>
+        <CardTitle className="text-white">Leave a Review</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">
+            <label className="text-sm font-medium text-slate-300 mb-2 block">
               Rating *
             </label>
             <StarRating />
             <input type="hidden" {...register("rating", { valueAsNumber: true })} />
             {errors.rating && (
-              <p className="text-sm text-destructive mt-1">{errors.rating.message}</p>
+              <p className="text-sm text-red-400 mt-1">{errors.rating.message}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="reviewText" className="text-sm font-medium text-foreground mb-2 block">
+            <label htmlFor="reviewText" className="text-sm font-medium text-slate-300 mb-2 block">
               Your Review *
             </label>
             <Textarea
               id="reviewText"
               placeholder="Share your experience with this auction..."
               rows={4}
+              className="bg-slate-700 border-white/10 text-white placeholder:text-slate-400"
               {...register("reviewText")}
             />
             {errors.reviewText && (
-              <p className="text-sm text-destructive mt-1">{errors.reviewText.message}</p>
+              <p className="text-sm text-red-400 mt-1">{errors.reviewText.message}</p>
             )}
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-slate-400 mt-1">
               10-500 characters
             </p>
           </div>

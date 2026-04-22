@@ -112,11 +112,11 @@ function DialogPortal({ children, ...props }: React.HTMLAttributes<HTMLDivElemen
   );
 }
 
-function DialogContent({ 
-  className, 
-  children, 
+function DialogContent({
+  className,
+  children,
   showCloseButton = true,
-  ...props 
+  ...props
 }: DialogContentProps) {
   const { onOpenChange } = useDialog();
 
@@ -158,11 +158,11 @@ function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivEleme
   );
 }
 
-function DialogFooter({ 
-  className, 
-  showCloseButton = false, 
-  children, 
-  ...props 
+function DialogFooter({
+  className,
+  showCloseButton = false,
+  children,
+  ...props
 }: React.HTMLAttributes<HTMLDivElement> & { showCloseButton?: boolean }) {
   const { onOpenChange } = useDialog();
 

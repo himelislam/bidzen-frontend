@@ -15,6 +15,7 @@ import { POLLING_INTERVAL_DETAIL } from "@/utils/constants";
 import { setMetaTags, clearMetaTags } from "@/utils/seo";
 import { extractAuctionData, extractBidsData } from "@/api/apiHelpers";
 import { Button } from "@/components/ui/button";
+import ImageGallery from "@/components/ui/ImageGallery";
 
 export default function AuctionDetailsPage() {
   const { id } = useParams();
@@ -114,11 +115,19 @@ export default function AuctionDetailsPage() {
           </div>
         </div>
 
-        {/* MAIN GRID */}
-        <div className="grid lg:grid-cols-3 gap-8">
+        {/* MAIN GRID - FIRST ROW */}
+        <div className="grid lg:grid-cols-2 gap-8 mb-8">
 
-          {/* LEFT CONTENT */}
-          <div className="lg:col-span-2 space-y-6">
+          {/* LEFT CONTENT - IMAGE GALLERY */}
+          <div className="space-y-6">
+            <ImageGallery
+              images={auction?.images || []}
+              className="sticky top-24"
+            />
+          </div>
+
+          {/* RIGHT CONTENT - AUCTION DETAILS */}
+          <div className="space-y-6">
 
             {/* PRICING CARD */}
             <div className="grid md:grid-cols-2 gap-4">
@@ -167,54 +176,49 @@ export default function AuctionDetailsPage() {
 
           </div>
 
-          {/* RIGHT SIDEBAR (STICKY BID PANEL) */}
-          <div className="lg:col-span-1">
-
-            <div className="sticky top-6 space-y-6">
-
-              {/* BID FORM */}
-              {isBuyer && isActive && (
-                <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800">
-                  <h3 className="text-lg font-semibold mb-4">Place Your Bid</h3>
-                  <BidForm
-                    auction={auction}
-                    onBidSuccess={fetchAuctionDetails}
-                  />
-                </div>
-              )}
-
-              {/* WINNER */}
-              {auction.status === "closed" && auction.winner && (
-                <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30">
-                  <h3 className="text-lg font-bold text-amber-300">
-                    🏆 Winner
-                  </h3>
-
-                  <p className="mt-2 font-semibold">
-                    {auction.winner.name}
-                  </p>
-
-                  <p className="text-sm text-slate-300 mt-2">
-                    Winning Bid:{" "}
-                    <PriceDisplay amount={auction.currentHighestBid} />
-                  </p>
-
-                  {user?.role === "buyer" &&
-                    auction.winner._id === user?._id && (
-                      <Button asChild className="mt-4 w-full">
-                        <Link to={`/auctions/${auction._id}/feedback`}>
-                          Leave Feedback
-                        </Link>
-                      </Button>
-                    )}
-                </div>
-              )}
-
-            </div>
-
-          </div>
-
         </div>
+
+        {/* SECOND ROW - BID FORM */}
+        {isBuyer && isActive && (
+          <div className="max-w-2xl mx-auto">
+            <div className="w-full p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+              <h3 className="text-xl font-semibold mb-6 text-white">Place Your Bid</h3>
+              <BidForm
+                auction={auction}
+                onBidSuccess={fetchAuctionDetails}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* WINNER SECTION */}
+        {auction.status === "closed" && auction.winner && (
+          <div className="max-w-2xl mx-auto mt-8">
+            <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30">
+              <h3 className="text-lg font-bold text-amber-300">
+                <span className="text-2xl"> </span> Winner
+              </h3>
+
+              <p className="mt-2 font-semibold text-white">
+                {auction.winner.name}
+              </p>
+
+              <p className="text-sm text-slate-300 mt-2">
+                Winning Bid:{" "}
+                <PriceDisplay amount={auction.currentHighestBid} />
+              </p>
+
+              {user?.role === "buyer" &&
+                auction.winner._id === user?._id && (
+                  <Button asChild className="mt-4 w-full">
+                    <Link to={`/auctions/${auction._id}/feedback`}>
+                      Leave Feedback
+                    </Link>
+                  </Button>
+                )}
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

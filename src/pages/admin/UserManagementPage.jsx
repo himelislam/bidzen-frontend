@@ -51,8 +51,8 @@ export default function UserManagementPage() {
 
       toast.success("User deactivated");
       setDeactivateDialog({ open: false, userId: null });
-    } catch {
-      toast.error("Failed");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to deactivate user");
     } finally {
       setIsDeactivating(false);
     }
@@ -157,11 +157,10 @@ export default function UserManagementPage() {
                         {user.role}
                       </span>
 
-                      <span className={`px-2 py-1 text-xs rounded ${
-                        user.status === "active"
+                      <span className={`px-2 py-1 text-xs rounded ${user.status === "active"
                           ? "bg-green-500/20 text-green-300"
                           : "bg-red-500/20 text-red-300"
-                      }`}>
+                        }`}>
                         {user.status}
                       </span>
 

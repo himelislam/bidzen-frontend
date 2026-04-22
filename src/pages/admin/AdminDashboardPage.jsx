@@ -62,8 +62,8 @@ export default function AdminDashboardPage() {
 
       toast.success("Flag resolved");
       setResolveDialog({ open: false, auctionId: null });
-    } catch {
-      toast.error("Failed to resolve");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to resolve flag");
     } finally {
       setIsResolving(false);
     }

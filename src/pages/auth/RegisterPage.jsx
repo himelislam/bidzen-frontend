@@ -40,7 +40,7 @@ export default function RegisterPage() {
       const { token, user } = res.data.data;
 
       setAuth(token, user);
-      toast.success(`Welcome to BidZen, ${user.name}!`);
+      toast.success(res.data?.message || `Welcome to BidZen, ${user.name}!`);
 
       if (user.role === "buyer") navigate("/buyer/dashboard");
       else navigate("/seller/dashboard");

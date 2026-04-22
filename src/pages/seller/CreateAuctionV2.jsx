@@ -21,7 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DateTimePicker } from "@/components/ui/datepicker";
+import { CalendarDatePicker } from "@/components/ui/CalendarDatePicker";
+import ImageUpload from "@/components/ui/ImageUpload";
 import toast from "react-hot-toast";
 
 const categories = [
@@ -56,6 +57,7 @@ const auctionSchema = z
 export default function CreateAuctionV2() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadedImages, setUploadedImages] = useState([]);
 
   const {
     register,
@@ -78,10 +80,24 @@ export default function CreateAuctionV2() {
   const onSubmit = async (data) => {
     try {
       setIsSubmitting(true);
-      const response = await createAuction(data);
+
+      // Create FormData for file upload
+      const formData = new FormData();
+
+      // Add form fields
+      Object.keys(data).forEach(key => {
+        formData.append(key, data[key]);
+      });
+
+      // Add images
+      uploadedImages.forEach((image, index) => {
+        formData.append(`images`, image);
+      });
+
+      const response = await createAuction(formData);
 
       if (response.data?.success || response.success) {
-        toast.success("Auction created successfully!");
+        toast.success(response.data?.message || response.message || "Auction created successfully!");
         navigate("/seller/dashboard");
       } else {
         toast.error(response.message || "Failed to create auction");
@@ -156,6 +172,22 @@ export default function CreateAuctionV2() {
                 )}
               </div>
 
+              {/* IMAGES UPLOAD */}
+              <div className="space-y-4">
+                <Label className="text-slate-300 text-lg font-medium">
+                  Product Images
+                </Label>
+                <p className="text-slate-400 text-sm">
+                  Add high-quality images to showcase your product. First image will be the primary image.
+                </p>
+                <ImageUpload
+                  images={uploadedImages}
+                  onImagesChange={setUploadedImages}
+                  maxImages={10}
+                  className="mt-2"
+                />
+              </div>
+
               {/* PRICE + CATEGORY */}
               <div className="grid md:grid-cols-2 gap-4">
 
@@ -174,12 +206,12 @@ export default function CreateAuctionV2() {
                 <div className="space-y-2">
                   <Label className="text-slate-300">Category</Label>
 
-                  <Select onValueChange={(v) => setValue("category", v)}>
+                  <Select value={watch("category")} onValueChange={(v) => setValue("category", v)}>
                     <SelectTrigger className="bg-slate-950 border-white/10 text-white">
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
 
-                    <SelectContent>
+                    <SelectContent align="start">
                       {categories.map((c) => (
                         <SelectItem key={c} value={c}>
                           {c}
@@ -196,24 +228,22 @@ export default function CreateAuctionV2() {
               <div className="space-y-4">
 
                 <div>
-                  <Label className="text-slate-300">
-                    Start Time
-                  </Label>
-                  <DateTimePicker
+                  <CalendarDatePicker
                     value={watch("startTime")}
                     onChange={(v) => setValue("startTime", v)}
-                    className="mt-2"
+                    label="Start Time"
+                    required
+                    placeholder="Select start date and time"
                   />
                 </div>
 
                 <div>
-                  <Label className="text-slate-300">
-                    End Time
-                  </Label>
-                  <DateTimePicker
+                  <CalendarDatePicker
                     value={watch("endTime")}
                     onChange={(v) => setValue("endTime", v)}
-                    className="mt-2"
+                    label="End Time"
+                    required
+                    placeholder="Select end date and time"
                   />
                 </div>
 
@@ -224,7 +254,7 @@ export default function CreateAuctionV2() {
 
                 <Button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || uploadedImages.length === 0}
                   className="
                     flex-1 bg-gradient-to-r from-purple-600 to-indigo-600
                     hover:from-purple-500 hover:to-indigo-500

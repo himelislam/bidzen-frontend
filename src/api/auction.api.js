@@ -35,7 +35,12 @@ export const getAuctionById = async (id) => {
 
 export const createAuction = async (auctionData) => {
     try {
-        const response = await api.post("/api/auctions", auctionData);
+        // Handle FormData for image uploads
+        const config = auctionData instanceof FormData
+            ? { headers: { 'Content-Type': 'multipart/form-data' } }
+            : {};
+
+        const response = await api.post("/api/auctions", auctionData, config);
         return response;
     } catch (error) {
         console.warn("API failed, using mock response:", error);
@@ -83,6 +88,32 @@ export const getAuctionFeedback = async (auctionId) => {
         return response;
     } catch (error) {
         console.error("Failed to get auction feedback:", error);
+        throw error;
+    }
+};
+
+// Add new function to update auction images
+export const updateAuctionImages = async (id, formData) => {
+    try {
+        const response = await api.patch(`/api/auctions/${id}/images`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Failed to update auction images:", error);
+        throw error;
+    }
+};
+
+// Add function to delete auction image
+export const deleteAuctionImage = async (id, imageIndex) => {
+    try {
+        const response = await api.delete(`/api/auctions/${id}/images/${imageIndex}`);
+        return response.data;
+    } catch (error) {
+        console.error("Failed to delete auction image:", error);
         throw error;
     }
 };

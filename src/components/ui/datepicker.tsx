@@ -77,24 +77,24 @@ export function DateTimePicker({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <Label className="text-sm text-muted-foreground mb-2">Date</Label>
+          <Label className="text-sm text-muted-foreground mb-2"></Label>
           <Input
             type="date"
             value={selectedDate}
             onChange={(e) => handleDateChange(e.target.value)}
             min={getMinDate()}
             max={getMaxDate()}
-            className="w-full"
+            className="w-full bg-slate-950 border-white/10 text-white"
           />
         </div>
 
         <div>
-          <Label className="text-sm text-muted-foreground mb-2">Time</Label>
+          <Label className="text-sm text-muted-foreground mb-2 text-white">Time</Label>
           <Input
             type="time"
             value={selectedTime}
             onChange={(e) => handleTimeChange(e.target.value)}
-            className="w-full"
+            className="w-full bg-slate-950 border-white/10 text-white"
           />
         </div>
       </div>

@@ -36,7 +36,7 @@ export default function LoginPage() {
       const { token, user } = res.data.data;
 
       setAuth(token, user);
-      toast.success("Welcome back!");
+      toast.success(res.data?.message || "Welcome back!");
 
       if (user.role === "buyer") navigate("/buyer/dashboard");
       else if (user.role === "seller") navigate("/seller/dashboard");

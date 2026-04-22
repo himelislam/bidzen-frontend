@@ -90,10 +90,10 @@ export default function EditListingPage() {
       const res = await updateAuction(id, payload);
 
       if (res.data?.success) {
-        toast.success("Auction updated successfully 🚀");
+        toast.success(res.data?.message || "Auction updated successfully");
         navigate("/seller/dashboard");
       } else {
-        toast.error("Update failed");
+        toast.error(res.data?.message || "Update failed");
       }
     } catch (err) {
       toast.error("Something went wrong");
@@ -152,11 +152,11 @@ export default function EditListingPage() {
               {/* Category */}
               <div>
                 <Label className="text-slate-300">Category</Label>
-                <Select onValueChange={(v) => setValue("category", v)}>
+                <Select value={watch("category")} onValueChange={(v) => setValue("category", v)}>
                   <SelectTrigger className="bg-slate-800 border-white/10 text-white mt-2">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent align="start">
                     {categories.map((c) => (
                       <SelectItem key={c} value={c}>
                         {c}

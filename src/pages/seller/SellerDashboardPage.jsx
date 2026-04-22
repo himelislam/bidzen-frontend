@@ -7,6 +7,7 @@ import PriceDisplay from "@/components/shared/PriceDisplay";
 import AuctionStatusBadge from "@/components/auction/AuctionStatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
+import AuctionImageManager from "@/components/shared/AuctionImageManager";
 import toast from "react-hot-toast";
 
 export default function SellerDashboardPage() {
@@ -14,6 +15,7 @@ export default function SellerDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [deleteDialog, setDeleteDialog] = useState({ open: false, auctionId: null });
   const [isDeleting, setIsDeleting] = useState(false);
+  const [imageManagerDialog, setImageManagerDialog] = useState({ open: false, auction: null });
   const [sellerStats, setSellerStats] = useState({
     totalAuctions: 0,
     activeAuctions: 0,
@@ -55,6 +57,15 @@ export default function SellerDashboardPage() {
     closed: auctions.filter((a) => a.status === "closed").length,
   };
 
+  const refreshAuctions = async () => {
+    try {
+      const auctionRes = await getUserAuctions();
+      setAuctions(auctionRes || []);
+    } catch (error) {
+      toast.error("Failed to refresh auctions");
+    }
+  };
+
   const handleDeleteAuction = async (auctionId) => {
     try {
       setIsDeleting(true);
@@ -64,7 +75,7 @@ export default function SellerDashboardPage() {
       toast.success("Auction deleted successfully");
       setDeleteDialog({ open: false, auctionId: null });
     } catch (error) {
-      toast.error("Delete failed");
+      toast.error(error.response?.data?.message || "Delete failed");
     } finally {
       setIsDeleting(false);
     }
@@ -180,6 +191,19 @@ export default function SellerDashboardPage() {
                         <Link to={`/auctions/${auction._id}`}>View</Link>
                       </Button>
 
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          setImageManagerDialog({
+                            open: true,
+                            auction: auction,
+                          })
+                        }
+                      >
+                        Images
+                      </Button>
+
                       {auction.status === "scheduled" && (
                         <>
                           <Button
@@ -230,6 +254,32 @@ export default function SellerDashboardPage() {
         isDestructive
         loading={isDeleting}
       />
+
+      {/* Image Manager Dialog */}
+      {imageManagerDialog.open && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-950 border border-white/10 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-white">Manage Images</h2>
+                <Button
+                  variant=""
+                  onClick={() => setImageManagerDialog({ open: false, auction: null })}
+                  className="!bg-slate-950"
+                >
+                  Close
+                </Button>
+              </div>
+
+              <AuctionImageManager
+                auction={imageManagerDialog.auction}
+                onImagesUpdated={refreshAuctions}
+                className="!bg-slate-950"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

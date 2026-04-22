@@ -55,14 +55,14 @@ export default function BidForm({ auction, onBidSuccess }) {
   };
 
   return (
-    <Card>
+    <Card className="bg-slate-800 border border-white/10">
       <CardHeader>
-        <CardTitle>Place Your Bid</CardTitle>
+        <CardTitle className="text-white">Place Your Bid</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="amount">Bid Amount</Label>
+            <Label htmlFor="amount" className="text-slate-300">Bid Amount</Label>
             <Input
               id="amount"
               type="number"
@@ -70,23 +70,23 @@ export default function BidForm({ auction, onBidSuccess }) {
               step="1"
               placeholder={`Minimum bid: ${formatCurrency(minBid)}`}
               {...register("amount", { valueAsNumber: true })}
-              className="text-lg"
+              className="text-lg bg-slate-700 border-white/10 text-white placeholder:text-slate-400"
             />
             {errors.amount && (
-              <p className="text-sm text-destructive">{errors.amount.message}</p>
+              <p className="text-sm text-red-400">{errors.amount.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <div className="flex justify-between text-sm text-muted-foreground">
+            <div className="flex justify-between text-sm text-slate-400">
               <span>Starting Price:</span>
               <PriceDisplay amount={auction.startingPrice} />
             </div>
-            <div className="flex justify-between text-sm text-muted-foreground">
+            <div className="flex justify-between text-sm text-slate-400">
               <span>Current Highest:</span>
               <PriceDisplay amount={auction.currentHighestBid || auction.startingPrice} />
             </div>
-            <div className="flex justify-between text-sm font-medium">
+            <div className="flex justify-between text-sm font-medium text-white">
               <span>Minimum Bid:</span>
               <PriceDisplay amount={minBid} />
             </div>
@@ -94,7 +94,7 @@ export default function BidForm({ auction, onBidSuccess }) {
 
           <Button
             type="submit"
-            className="w-full"
+            className="w-full bg-slate-700 hover:bg-slate-600 text-white border-white/10"
             disabled={isSubmitting || !watchedAmount || watchedAmount < minBid}
           >
             {isSubmitting ? "Placing Bid..." : "Place Bid"}

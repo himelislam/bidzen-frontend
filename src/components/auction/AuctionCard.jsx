@@ -19,14 +19,10 @@ export default function AuctionCard({ auction }) {
         border border-white/10
         hover:border-transparent
         transition-all duration-300
-        hover:-translate-y-1 hover:shadow-2xl
+        hover:-translate-y-1 hover:shadow-2xl p-0
       "
     >
-      {/* Gradient border glow */}
-      <div className="absolute inset-0 p-[1px] rounded-xl bg-gradient-to-r from-purple-500 via-indigo-500 to-cyan-400 opacity-20 group-hover:opacity-60 transition" />
 
-      {/* Inner glow */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-cyan-500/10 opacity-0 group-hover:opacity-100 transition" />
 
       <CardContent className="relative flex-1 p-5">
         {/* Top */}
@@ -99,37 +95,21 @@ export default function AuctionCard({ auction }) {
       </CardContent>
 
       {/* Footer */}
-      <CardFooter className="p-5 pt-0 flex gap-2">
+      <div className="p-5 pt-0 flex gap-2 border-t border-white/10">
         <Button
           asChild
           size="sm"
           className="
-    flex-1 relative overflow-hidden
-    bg-transparent text-white
-    border border-white/10
-    hover:border-transparent
-    transition-all duration-300
-    hover:-translate-y-[2px]
-  "
+            flex-1 relative overflow-hidden
+            bg-slate-800 text-white
+            border border-white/20
+            hover:bg-slate-700 hover:border-white/30
+            transition-all duration-300
+            hover:-translate-y-[2px]
+          "
         >
-          <Link to={`/auctions/${auction._id}`} className=" mt-2">
+          <Link to={`/auctions/${auction._id}`}>
             View Details
-            {/* hover glow layer */}
-            <span
-              className="
-      absolute inset-0 -z-10 opacity-0
-      bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800
-      group-hover:opacity-100 transition
-    "
-            />
-            {/* subtle border glow */}
-            <span
-              className="
-      absolute inset-0 rounded-md
-      bg-gradient-to-r from-cyan-500/30 via-transparent to-purple-500/30
-      opacity-0 hover:opacity-100 blur-md transition
-    "
-            />
           </Link>
         </Button>
 
@@ -141,12 +121,13 @@ export default function AuctionCard({ auction }) {
               flex-1 bg-gradient-to-r from-cyan-500 via-purple-600 to-indigo-600
               hover:from-cyan-400 hover:via-purple-500 hover:to-indigo-500
               shadow-lg hover:shadow-cyan-500/30
+              text-white border-0
             "
           >
             <Link to={`/auctions/${auction._id}`}>Place Bid</Link>
           </Button>
         )}
-      </CardFooter>
+      </div>
     </Card>
   );
 }

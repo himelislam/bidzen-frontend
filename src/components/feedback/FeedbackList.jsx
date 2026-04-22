@@ -5,6 +5,7 @@ import { Star } from "lucide-react";
 import EmptyState from "@/components/shared/EmptyState";
 import { getAuctionFeedback } from "@/api/auction.api";
 import { extractFeedbacksData } from "@/api/apiHelpers";
+import toast from "react-hot-toast";
 
 export default function FeedbackList({ auctionId }) {
   const [feedback, setFeedback] = useState([]);
@@ -30,6 +31,7 @@ export default function FeedbackList({ auctionId }) {
         setFeedback(feedback);
       } catch (error) {
         console.error("Failed to fetch feedback:", error);
+        toast.error("Failed to load feedback");
       } finally {
         setLoading(false);
       }

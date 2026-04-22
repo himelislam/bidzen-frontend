@@ -79,7 +79,7 @@ export default function FeedbackFormPage() {
 
         setAuction(data);
       } catch (err) {
-        toast.error("Failed to load auction");
+        toast.error(err.response?.data?.message || "Failed to load auction");
         navigate(`/auctions/${id}`);
       } finally {
         setLoading(false);
@@ -101,7 +101,7 @@ export default function FeedbackFormPage() {
       toast.success("Feedback submitted successfully!");
       navigate("/buyer/bids");
     } catch (err) {
-      toast.error("Failed to submit feedback");
+      toast.error(err.response?.data?.message || "Failed to submit feedback");
     } finally {
       setIsSubmitting(false);
     }

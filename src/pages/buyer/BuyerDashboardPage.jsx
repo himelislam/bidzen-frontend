@@ -8,11 +8,14 @@ import AuctionStatusBadge from "@/components/auction/AuctionStatusBadge";
 import EmptyState from "@/components/shared/EmptyState";
 import { useAuth } from "@/hooks/useAuth";
 import toast from "react-hot-toast";
+import { Search, Gavel, TrendingUp, Clock } from "lucide-react";
+import BidForm from "@/components/auction/BidForm";
 
 export default function BuyerDashboardPage() {
   const { user } = useAuth();
   const [userBids, setUserBids] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedAuction, setSelectedAuction] = useState(null);
 
   const [stats, setStats] = useState({
     totalBids: 0,
@@ -116,7 +119,7 @@ export default function BuyerDashboardPage() {
           {/* Bids */}
           <div className="lg:col-span-2">
 
-            <h2 className="text-xl font-semibold mb-4">Recent Bids</h2>
+            <h2 className="text-xl font-semibold mb-4 text-white">Recent Bids</h2>
 
             {userBids.length === 0 ? (
               <EmptyState
@@ -131,28 +134,81 @@ export default function BuyerDashboardPage() {
                     key={bid._id}
                     className="bg-white/5 border border-white/10 backdrop-blur-xl hover:border-cyan-500/40 transition"
                   >
-                    <CardContent className="flex justify-between items-center p-5">
+                    <CardContent className="p-5">
 
-                      <div>
-                        <Link
-                          to={`/auctions/${bid.auction._id}`}
-                          className="font-medium hover:text-cyan-400 transition"
-                        >
-                          {bid.auction.title}
-                        </Link>
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1">
+                          <Link
+                            to={`/auctions/${bid.auction._id}`}
+                            className="font-medium text-white hover:text-cyan-400 transition"
+                          >
+                            {bid.auction.title}
+                          </Link>
 
-                        <div className="text-xs mt-1">
-                          <AuctionStatusBadge status={bid.auction.status} />
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-xs px-2 py-1 bg-slate-700 rounded text-slate-300">
+                              {bid.auction.category || 'other'}
+                            </span>
+                            <AuctionStatusBadge status={bid.auction.status} />
+                            {bid.auction.status === 'active' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setSelectedAuction(bid.auction)}
+                                className="border-cyan-500/30 hover:bg-cyan-500/10 text-cyan-400 text-xs px-2 py-1 h-6"
+                              >
+                                Bid Now
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="text-right ml-4">
+                          <div className="font-bold text-cyan-400">
+                            <PriceDisplay amount={bid.amount} />
+                          </div>
+                          <div className="text-xs text-slate-400">
+                            Your bid
+                          </div>
                         </div>
                       </div>
 
-                      <div className="text-right">
-                        <div className="font-bold text-cyan-400">
-                          <PriceDisplay amount={bid.amount} />
+                      <div className="grid grid-cols-3 gap-4 text-xs text-slate-400 border-t border-slate-700 pt-3">
+                        <div>
+                          <div className="text-slate-500">Current Bid</div>
+                          <div className="text-white font-medium">
+                            <PriceDisplay amount={bid.auction.currentHighestBid || 0} />
+                          </div>
                         </div>
-                        <div className="text-xs text-slate-400">
-                          {new Date(bid.createdAt).toLocaleDateString()}
+                        <div>
+                          <div className="text-slate-500">Ends In</div>
+                          <div className="text-white font-medium">
+                            {bid.auction.endTime ? (
+                              new Date(bid.auction.endTime) > new Date() ? (
+                                Math.ceil((new Date(bid.auction.endTime) - new Date()) / (1000 * 60 * 60 * 24)) > 0 ?
+                                  `${Math.ceil((new Date(bid.auction.endTime) - new Date()) / (1000 * 60 * 60 * 24))}d` :
+                                  `${Math.ceil((new Date(bid.auction.endTime) - new Date()) / (1000 * 60 * 60))}h`
+                              ) : 'Ended'
+                            ) : 'N/A'}
+                          </div>
                         </div>
+                        <div>
+                          <div className="text-slate-500">Total Bids</div>
+                          <div className="text-white font-medium">
+                            {bid.auction.bidCount || 0}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center mt-3 text-xs text-slate-400">
+                        <div>
+                          Bid on {new Date(bid.createdAt).toLocaleDateString()}
+                        </div>
+                        {bid.auction.winner === user?._id && bid.auction.status === 'closed' && (
+                          <div className="text-green-400 font-medium">
+                            You Won!
+                          </div>
+                        )}
                       </div>
 
                     </CardContent>
@@ -164,28 +220,74 @@ export default function BuyerDashboardPage() {
 
           </div>
 
-          {/* Actions */}
-          <div>
+          {/* Right Sidebar */}
+          <div className="space-y-8">
+            {/* Quick Actions */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold text-white">Quick Actions</h2>
 
-            <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+              <div className="space-y-3">
+                <Button
+                  asChild
+                  className="w-full bg-slate-800 hover:bg-slate-700 text-white border border-white/10"
+                >
+                  <Link to="/auctions" className="flex items-center justify-center gap-2">
+                    <Search className="h-4 w-4" />
+                    Browse Auctions
+                  </Link>
+                </Button>
 
-            <div className="space-y-3">
+                <Button
+                  variant="secondary"
+                  asChild
+                  className="w-full border-white/20 bg-slate-300 hover:bg-white/10 text-white"
+                >
+                  <Link to="/my-bids" className="flex items-center justify-center gap-2">
+                    <Gavel className="h-4 w-4" />
+                    My Bids
+                  </Link>
+                </Button>
+              </div>
 
-              <Button
-                asChild
-                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-90"
-              >
-                <Link to="/auctions">Browse Auctions</Link>
-              </Button>
+            </div>
 
-              <Button
-                variant="outline"
-                asChild
-                className="w-full border-white/10 hover:bg-white/5 text-black"
-              >
-                <Link to="/my-bids" className="text-black">My Bids</Link>
-              </Button>
-
+            {/* Bid Form */}
+            <div>
+              {selectedAuction ? (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-xl font-semibold text-white">Place Bid</h2>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setSelectedAuction(null)}
+                      className="text-slate-400 hover:text-white"
+                    >
+                      ×
+                    </Button>
+                  </div>
+                  <div className="text-sm text-slate-400 mb-2">
+                    Bidding on: <span className="text-white font-medium">{selectedAuction.title}</span>
+                  </div>
+                  <BidForm
+                    auction={selectedAuction}
+                    onBidSuccess={() => {
+                      setSelectedAuction(null);
+                      fetchUserData();
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <h2 className="text-xl font-semibold text-white">Quick Bid</h2>
+                  <div className="bg-slate-800 border border-white/10 rounded-lg p-6 text-center">
+                    <Gavel className="h-8 w-8 text-slate-400 mx-auto mb-3" />
+                    <p className="text-slate-400 text-sm">
+                      Select an active auction from your bids to place a new bid
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
           </div>
