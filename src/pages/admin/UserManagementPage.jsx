@@ -6,8 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import EmptyState from "@/components/shared/EmptyState";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import toast from "react-hot-toast";
-
-/* mock data same as yours */
+import { getAllUsers, deactivateUser, activateUser } from "@/api/admin.api";
 
 export default function UserManagementPage() {
   const [users, setUsers] = useState([]);
@@ -23,11 +22,22 @@ export default function UserManagementPage() {
   }, []);
 
   useEffect(() => {
-    setTimeout(() => {
-      setUsers(mockUsers);
-      setLoading(false);
-    }, 1000);
+    fetchUsers();
   }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await getAllUsers();
+      setUsers(response.data.users || response.data);
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+      toast.error(error.response?.data?.message || "Failed to fetch users");
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
@@ -35,7 +45,9 @@ export default function UserManagementPage() {
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesRole = roleFilter === "all" || user.role === roleFilter;
-    const matchesStatus = statusFilter === "all" || user.status === statusFilter;
+    const matchesStatus = statusFilter === "all" ||
+      (statusFilter === "active" && user.isActive) ||
+      (statusFilter === "inactive" && !user.isActive);
 
     return matchesSearch && matchesRole && matchesStatus;
   });
@@ -43,13 +55,13 @@ export default function UserManagementPage() {
   const handleDeactivateUser = async (userId) => {
     try {
       setIsDeactivating(true);
-      await new Promise((res) => setTimeout(res, 1000));
+      await deactivateUser(userId);
 
       setUsers(users.map(u =>
-        u._id === userId ? { ...u, status: "suspended" } : u
+        u._id === userId ? { ...u, isActive: false } : u
       ));
 
-      toast.success("User deactivated");
+      toast.success("User deactivated successfully");
       setDeactivateDialog({ open: false, userId: null });
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to deactivate user");
@@ -58,11 +70,18 @@ export default function UserManagementPage() {
     }
   };
 
-  const handleActivateUser = (userId) => {
-    setUsers(users.map(u =>
-      u._id === userId ? { ...u, status: "active" } : u
-    ));
-    toast.success("User activated");
+  const handleActivateUser = async (userId) => {
+    try {
+      await activateUser(userId);
+
+      setUsers(users.map(u =>
+        u._id === userId ? { ...u, isActive: true } : u
+      ));
+
+      toast.success("User activated successfully");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to activate user");
+    }
   };
 
   if (loading) {
@@ -121,7 +140,7 @@ export default function UserManagementPage() {
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="suspended">Suspended</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>
 
@@ -157,11 +176,11 @@ export default function UserManagementPage() {
                         {user.role}
                       </span>
 
-                      <span className={`px-2 py-1 text-xs rounded ${user.status === "active"
-                          ? "bg-green-500/20 text-green-300"
-                          : "bg-red-500/20 text-red-300"
+                      <span className={`px-2 py-1 text-xs rounded ${user.isActive
+                        ? "bg-green-500/20 text-green-300"
+                        : "bg-red-500/20 text-red-300"
                         }`}>
-                        {user.status}
+                        {user.isActive ? "active" : "inactive"}
                       </span>
 
                     </div>
@@ -175,7 +194,7 @@ export default function UserManagementPage() {
                     Joined: {new Date(user.createdAt).toLocaleDateString()}
                   </div>
 
-                  {user.status === "active" ? (
+                  {user.isActive ? (
                     <Button
                       size="sm"
                       className="bg-red-600 hover:bg-red-700"
