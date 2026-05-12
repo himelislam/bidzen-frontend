@@ -8,13 +8,13 @@ export const getAllUsers = async () => {
 
 // Deactivate user
 export const deactivateUser = async (userId) => {
-  const response = await api.put(`/api/admin/users/${userId}/deactivate`);
+  const response = await api.patch(`/api/admin/users/${userId}/deactivate`);
   return response.data;
 };
 
 // Activate user
 export const activateUser = async (userId) => {
-  const response = await api.put(`/api/admin/users/${userId}/activate`);
+  const response = await api.patch(`/api/admin/users/${userId}/activate`);
   return response.data;
 };
 
